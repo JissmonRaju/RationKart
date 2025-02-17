@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+{% extends 'Index.html' %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management</title>
+</head>
+<body>
+<div class="container-fluid">
+        <div class="container-fluid">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title fw-semibold mb-4">Add Users</h5>
+              <div class="card">
+                <div class="card-body">
+                  <form action="{% url 'Save_User' %}" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Name Of User</label>
+                      <input type="text" class="form-control" name="name" aria-describedby="emailHelp">
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Email address</label>
+                      <input type="email" name="mail" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputPassword1" class="form-label">Password</label>
+                      <input type="password" name="pass" class="form-control" id="exampleInputPassword1">
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Phone Number</label>
+                      <input type="text" name="mobile" class="form-control"  aria-describedby="emailHelp">
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Role</label>
+                      <select name="role" id="" class="form-control">
+                        <option>Select Role</option>
+                        <option>Admin</option>
+                        <option>Shop Owner</option>
+                        <option>Customer</option>
+                        <option>Delivery Executive</option>
+                      </select>
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Created At</label>
+                      <input type="datetime-local" class="form-control" name="tym" aria-describedby="emailHelp">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                  </form>
+                </div>
+              </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+</body>
+</html>
+{% endblock %}
