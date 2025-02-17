@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+{% extends 'Index.html' %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="container-fluid">
+    <!--  Row 1 -->
+
+
+    <div class="row">
+        <div class="col-lg-12 d-flex align-items-stretch">
+            <div class="card w-100">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-semibold mb-4">User Details</h5>
+                    <div class="table-responsive">
+                        <table class="table text-nowrap mb-0 align-left">
+                            <thead class="text-dark fs-4">
+                            <tr>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Name</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Email</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Mobile</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Role</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Created Time</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Actions</h6>
+                                </th>
+
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for i in us_er %}
+                            <tr>
+                                <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{i.Name}}</h6></td>
+                                <td class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-1">{{i.Email}}</h6>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0 fs-4">{{i.Mobile}}</h6>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="fw-semibold mb-0 fs-4">{{i.Role}}</h6>
+
+                                    </div>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0 fs-4">{{i.Created_at}}</h6>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0 fs-4">
+                                        <a href="{% url 'Edit_User' u_id=i.id %}">
+                                            <button type="button" class="btn btn-info m-1">Edit</button>
+                                        </a>
+                                    </h6>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0 fs-4">
+                                        <a href="{% url 'Delete_User' u_id=i.id %}">
+                                            <button type="button" class="btn btn-danger m-1">Delete</button>
+                                        </a>
+                                    </h6>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+{% endblock %}
