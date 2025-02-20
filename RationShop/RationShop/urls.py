@@ -25,7 +25,7 @@ from RationShop import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('AdminApp/',include(AdminApp.urls)),
-    path('WebApp/',include(WebApp.urls)),
+    path('',include(WebApp.urls)),
 
 ]
 

@@ -68,7 +68,7 @@
                                     <a class="nav-link" href="{% url 'Home' %}"> Home </a>
                                 </li>
                                 <li class="nav-item ">
-                                    <a class="nav-link" href="{% url 'Products' %}">Products</a>
+                                    <a class="nav-link" href="{% url 'Products' %}">Ration</a>
                                 </li>
 
                                 <li class="nav-item active">
@@ -121,101 +121,44 @@
             <!-- Cart Items -->
             <div class="card mb-4">
                 <div class="card-body">
+                    {% for i in crt %}
+
                     <!-- Rice -->
                     <div class="row mb-4 align-items-center">
                         <div class="col-md-6">
-                            <h5 class="mb-0">Rice</h5>
-                            <small class="text-muted">kg</small>
+                            <p class="text-muted small mb-1">Product Name</p>
+
+                            <h5 class="mb-0">{{i.Item_Name}}</h5>
                         </div>
+
                         <div class="col-md-3">
+                            <p class="text-muted small mb-1">Quantity (in Kg)</p>
+
                             <div class="input-group">
-                                <button class="btn btn-outline-secondary" type="button">-</button>
-                                <input type="text" class="form-control text-center" value="2">
-                                <button class="btn btn-outline-secondary" type="button">+</button>
+
+                                <input type="text" disabled class="form-control text-center"
+                                       value="{{i.Item_Quantity}}">
                             </div>
                         </div>
                         <div class="col-md-2">
-                            <p class="mb-0">₹90.00</p>
-                            <small class="text-muted">₹45.00 / kg</small>
+                            <p class="text-muted small mb-1">Price</p>
+
+                            <p class="mb-0">₹ {{i.I_Total}}</p>
+                            <small class="text-muted">₹ {{i.I_Price}} / kg</small>
                         </div>
                         <div class="col-md-1">
-                            <button class="btn btn-link text-danger">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <a href="{% url 'DeleteCart' crt_id=i.id %}">
+                                <button class="btn btn-link text-danger" type="submit">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </a>
                         </div>
                     </div>
 
                     <!-- Wheat Flour -->
-                    <div class="row mb-4 align-items-center">
-                        <div class="col-md-6">
-                            <h5 class="mb-0">Wheat Flour</h5>
-                            <small class="text-muted">kg</small>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="input-group">
-                                <button class="btn btn-outline-secondary" type="button">-</button>
-                                <input type="text" class="form-control text-center" value="1">
-                                <button class="btn btn-outline-secondary" type="button">+</button>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <p class="mb-0">₹35.00</p>
-                            <small class="text-muted">₹35.00 / kg</small>
-                        </div>
-                        <div class="col-md-1">
-                            <button class="btn btn-link text-danger">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
 
-                    <!-- Sugar -->
-                    <div class="row mb-4 align-items-center">
-                        <div class="col-md-6">
-                            <h5 class="mb-0">Sugar</h5>
-                            <small class="text-muted">kg</small>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="input-group">
-                                <button class="btn btn-outline-secondary" type="button">-</button>
-                                <input type="text" class="form-control text-center" value="1">
-                                <button class="btn btn-outline-secondary" type="button">+</button>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <p class="mb-0">₹40.00</p>
-                            <small class="text-muted">₹40.00 / kg</small>
-                        </div>
-                        <div class="col-md-1">
-                            <button class="btn btn-link text-danger">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
+                    {% endfor %}
 
-                    <!-- Cooking Oil -->
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <h5 class="mb-0">Cooking Oil</h5>
-                            <small class="text-muted">L</small>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="input-group">
-                                <button class="btn btn-outline-secondary" type="button">-</button>
-                                <input type="text" class="form-control text-center" value="2">
-                                <button class="btn btn-outline-secondary" type="button">+</button>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <p class="mb-0">₹240.00</p>
-                            <small class="text-muted">₹120.00 / L</small>
-                        </div>
-                        <div class="col-md-1">
-                            <button class="btn btn-link text-danger">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -348,5 +291,18 @@
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'web/assets/js/jquery.min.js' %}"></script>
+<script src="{% static 'web/assets/js/popper.min.js' %}"></script>
+<script src="{% static 'web/assets/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'web/assets/js/jquery-3.0.0.min.js' %}"></script>
+<!-- sidebar -->
+<script src="{% static 'web/assets/js/jquery.mCustomScrollbar.concat.min.js' %}"></script>
+<script src="{% static 'web/assets/js/custom.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+        crossorigin="anonymous"></script>
 </body>
 </html>

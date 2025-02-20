@@ -4,13 +4,7 @@ from django.db import models
 # Create your models here.
 
 
-class UserRole(models.Model):
-    Name = models.CharField(max_length=100)
-    Email = models.EmailField(unique=True)
-    Password = models.CharField(max_length=100)
-    Mobile = models.CharField(max_length=15)
-    Role = models.CharField(max_length=20)
-    Created_at = models.DateTimeField(auto_now_add=True)
+
 
 class StockCategory(models.Model):
     Category_Name = models.CharField(max_length=100)

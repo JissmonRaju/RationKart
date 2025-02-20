@@ -7,12 +7,9 @@ urlpatterns = [
     path('Index/',views.index,name='Index'),
 
 
-    path('Add_User/',views.add_user,name='Add_User'),
-    path('Save_User/',views.save_user,name='Save_User'),
+
     path('View_User/',views.display_user,name='View_User'),
-    path('Edit_User/<int:u_id>/',views.edit_user,name='Edit_User'),
-    path('Update_User/<int:u_id>/',views.update_user,name='Update_User'),
-    path('Delete_User/<int:u_id>/',views.delete_user,name='Delete_User'),
+        path('Delete_User/<int:u_id>/',views.delete_user,name='Delete_User'),
 
     path('Add_Category/', views.add_category, name='Add_Category'),
     path('Save_Category/', views.save_category, name='Save_Category'),
