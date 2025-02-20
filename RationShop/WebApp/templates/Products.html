@@ -70,7 +70,7 @@
                                     <a class="nav-link" href="{% url 'Home' %}"> Home </a>
                                 </li>
                                 <li class="nav-item active">
-                                    <a class="nav-link" href="{% url 'Products' %}">Products</a>
+                                    <a class="nav-link" href="{% url 'Products' %}">Ration</a>
                                 </li>
 
                                 <li class="nav-item">
@@ -134,19 +134,8 @@
                     </div>
                     <div class="our_text">
                         <h4>₹<strong class="yellow">{{i.Item_Price}}</strong></h4>
-                        <h3>{{i.Item}}</h3>
-                        <p>{{i.Description}}</p>
-                        <h5><b>Availabilty ? : {{i.Availability}}</b></h5> <br>
-                        {% if i.Availability == 'Item Is Available' %}
-                        <button class="btn btn-success" style="width:200px;height:70px;">
-                            <a href="{% url 'Home' %}">Order Now</a>
-                        </button>
-                        {% else %}
-                        <button class="btn btn-danger" disabled style="width:200px;height:70px;">
-                            Item Not Available
-                        </button>
-                        {% endif %}
-
+                        <h3>{{i.Item}}</h3><br>
+                        <button class="btn btn-info"> <a href="{% url 'SingleProduct' si_id=i.id %}">More Details</a></button>
                     </div>
                 </div>
             </div>

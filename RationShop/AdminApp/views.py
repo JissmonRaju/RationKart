@@ -2,9 +2,10 @@ from django.contrib.auth import authenticate, login
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render, redirect
 from django.utils.datastructures import MultiValueDictKeyError
-from AdminApp.models import UserRole, Stock, StockCategory
+from AdminApp.models import Stock, StockCategory
 from django.contrib.auth.models import User
-from WebApp.models import ContactDB
+from WebApp.models import ContactDB,BeneficiaryRegister
+
 
 
 
@@ -14,49 +15,19 @@ def index(request):
     return render(request, 'Index.html')
 
 
-def add_user(request):
-    return render(request, 'Add_User.html')
 
 
-def save_user(request):
-    if request.method == 'POST':
-        u_name = request.POST.get('name')
-        email = request.POST.get('mail')
-        pwd = request.POST.get('pass')
-        num = request.POST.get('mobile')
-        u_role = request.POST.get('role')
-        create_time = request.POST.get('tym')
-        obj = UserRole(Name=u_name, Email=email, Password=pwd, Mobile=num, Role=u_role, Created_at=create_time)
-        obj.save()
-        return redirect(add_user)
 
 
 def display_user(request):
-    us_er = UserRole.objects.all()
+    us_er = BeneficiaryRegister.objects.all()
     return render(request, 'Display_User.html', {'us_er': us_er})
 
 
-def edit_user(request, u_id):
-    usr = UserRole.objects.get(id=u_id)
-    roles = ["Admin", "Shop Owner", "Customer", "Delivery Executive"]
-    return render(request, 'Edit_Details.html', {'usr': usr, 'roles': roles})
-
-
-def update_user(request, u_id):
-    if request.method == 'POST':
-        u_name = request.POST.get('name')
-        email = request.POST.get('mail')
-        pwd = request.POST.get('pass')
-        num = request.POST.get('mobile')
-        u_role = request.POST.get('role')
-        create_time = request.POST.get('tym')
-        UserRole.objects.filter(id=u_id).update(Name=u_name, Email=email, Password=pwd, Mobile=num, Role=u_role,
-                                            Created_at=create_time)
-        return redirect(display_user)
 
 
 def delete_user(request, u_id):
-    del_usr = UserRole.objects.filter(id=u_id)
+    del_usr = BeneficiaryRegister.objects.filter(id=u_id)
     del_usr.delete()
     return redirect(display_user)
 

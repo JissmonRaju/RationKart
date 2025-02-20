@@ -1,3 +1,5 @@
+from tkinter.font import names
+
 from django.urls import path
 from WebApp import views
 
@@ -11,11 +13,16 @@ urlpatterns = [
 
     path('SignUpPage/', views.signup_page, name='SignUpPage'),
     path('SignUp/',views.save_signup,name='SignUp'),
-    path('LoginPage/', views.login_page, name='LoginPage'),
+    path('', views.login_page, name='LoginPage'),
     path('Login/',views.save_login,name='Login'),
     path('LogOut/',views.log_out,name='LogOut'),
 
-    path('CartPage/',views.cart_page,name='CartPage')
+    path('CartPage/',views.cart_page,name='CartPage'),
+    path('SingleProduct/<int:si_id>/',views.single_product,name='SingleProduct'),
+    path('Save_Cart/',views.save_cart,name='Save_Cart'),
+    path('DeleteCart/<int:crt_id>/',views.delete_cart,name='DeleteCart'),
+    
+    path('Shop/',views.sin_up,name='Shop')
 
 
 

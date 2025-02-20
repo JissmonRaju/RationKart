@@ -1,7 +1,9 @@
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from AdminApp.models import Stock
-from WebApp.models import UserRegister,ContactDB
+from WebApp.models import BeneficiaryRegister, ContactDB, CartDB, ShopOwner
+from AdminApp.views import index
 
 
 # Create your views here.
@@ -22,14 +24,16 @@ def signup_page(request):
 
 def save_signup(request):
     if request.method == 'POST':
-        u_name = request.POST.get('username')
+        u_name = request.POST.get('bname')
         ration_card = request.POST.get('rationcard')
-        u_mail = request.POST.get('usermail')
-        u_mobile = request.POST.get('usermobile')
-        u_pass = request.POST.get('userpass')
-        c_pass = request.POST.get('confirmpass')
-        obj = UserRegister(U_Name=u_name, Ration_Card=ration_card, U_Mail=u_mail, U_Mobile=u_mobile, U_Pass=u_pass,
-                           C_Pass=c_pass)
+        card_color = request.POST.get('cardcolor')
+        u_mail = request.POST.get('bmail')
+        u_mobile = request.POST.get('bmobile')
+        u_pass = request.POST.get('bpass')
+        obj = BeneficiaryRegister(U_Name=u_name, Ration_Card=ration_card, Card_Color=card_color, U_Mail=u_mail,
+                                  U_Mobile=u_mobile,
+                                  U_Pass=u_pass
+                                  )
         obj.save()
         return redirect(login_page)
 
@@ -42,9 +46,17 @@ def save_login(request):
     if request.method == 'POST':
         unam_e = request.POST.get('uname')
         pass_words = request.POST.get('pass')
-        if UserRegister.objects.filter(U_Name=unam_e, U_Pass=pass_words).exists():
+        user = authenticate(username=unam_e, password=pass_words)
+        if user is not None and user.is_superuser:
+            login(request, user)
+            return redirect(index)
+        elif BeneficiaryRegister.objects.filter(U_Name=unam_e, U_Pass=pass_words).exists():
             request.session['U_Name'] = unam_e
             request.session['U_Pass'] = pass_words
+            return redirect(home)
+        elif ShopOwner.objects.filter(S_Name=unam_e, S_Pass=pass_words).exists():
+            request.session['S_Name'] = unam_e
+            request.session['S_Pass'] = pass_words
             return redirect(home)
         else:
             return redirect(login_page)
@@ -61,18 +73,92 @@ def log_out(request):
 def contact_us(request):
     return render(request, 'ContactUs.html')
 
+
 def save_contact(request):
     if request.method == 'POST':
         n_ame = request.POST.get('FullName')
         e_mail = request.POST.get('Email')
         phn_num = request.POST.get('PhoneNumber')
         mess_age = request.POST.get('mesg')
-        obj = ContactDB(F_Name=n_ame,C_Mail=e_mail,Phn_Num=phn_num,Mesg=mess_age)
+        obj = ContactDB(F_Name=n_ame, C_Mail=e_mail, Phn_Num=phn_num, Mesg=mess_age)
         obj.save()
         return redirect(home)
 
+
 def about_page(request):
-    return render(request,'AboutUs.html')
+    return render(request, 'AboutUs.html')
+
+
+def single_product(request, si_id):
+    sing = Stock.objects.get(id=si_id)
+
+    # Define product-specific default quantities
+    product_quantities = {
+        "Wheat": 10,
+        "Boiled Rice": 5,
+        "Sugar": 3,
+        "Oil": 2,
+        "Matta Rice":5,
+        "Raw Rice":7,
+        "Atta (Wheat Flour)":3
+    }
+    default_quantity = product_quantities.get(sing.Item, 1)  # Default to 1 if not listed
+
+    # Get the user beneficiary details
+    prod = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+
+    # Define quantity limits based on card color
+    card_quantities = {
+        "Yellow": 10,
+        "Pink": 8,
+        "Blue": 5,
+        "White": 3
+    }
+    card_quantity = card_quantities.get(prod.Card_Color, 1) if prod else 1  # Default to 1 if no card
+
+    # Determine the final quantity (minimum of card-based limit and product-specific limit)
+    final_quantity = min(default_quantity, card_quantity)
+
+    return render(request, 'SingleProduct.html', {
+        'sing': sing,
+        'prod': prod,
+        'final_quantity': final_quantity  # Pass this value to the template
+    })
+
 
 def cart_page(request):
-    return render(request,'CartPage.html')
+    crt = CartDB.objects.filter(User_Name=request.session['U_Name'])
+    return render(request, 'CartPage.html', {'crt': crt})
+
+
+def save_cart(request):
+    if request.method == 'POST':
+        i_name = request.POST.get('iname')
+        usr_name = request.POST.get('usrname')
+        i_price = request.POST.get('price')
+        i_quant = request.POST.get('quant')
+        i_total = request.POST.get('total')
+        try:
+            x = Stock.objects.get(Item=i_name)
+            img = x.Item_Image
+        except Stock.DoesNotExist:
+            img = None
+        obj = CartDB(
+            User_Name=usr_name,
+            Item_Name=i_name,
+            Item_Quantity=int(i_quant),  # Ensure integer conversion
+            I_Price=int(i_price),
+            I_Total=int(i_total),
+            Item_Image=img)
+        obj.save()
+        return redirect(products)
+
+
+def delete_cart(request, crt_id):
+    del_cart = CartDB.objects.filter(id=crt_id)
+    del_cart.delete()
+    return redirect(cart_page)
+
+
+def sin_up(request):
+    return render(request, 'ShopSignUp.html')

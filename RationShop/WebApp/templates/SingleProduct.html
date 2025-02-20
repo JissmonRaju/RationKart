@@ -2,6 +2,7 @@
 {% load static %}
 <html lang="en">
 <head>
+
     <!-- basic -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -33,8 +34,29 @@
     <!--[if lt IE 9]>
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .product-image-placeholder {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+        }
+        .rating-stars .fas, .rating-stars .far {
+            color: #FFD700;
+            font-size: 1.2rem;
+        }
+    </style>
 </head>
 <body class="main-layout inner_page">
+
 <header>
     <!-- header inner -->
     <div class="header">
@@ -63,7 +85,7 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'Home' %}"> Home </a>
                                 </li>
-                                <li class="nav-item ">
+                                <li class="nav-item active">
                                     <a class="nav-link" href="{% url 'Products' %}">Ration</a>
                                 </li>
 
@@ -73,8 +95,8 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="">Orders</a>
                                 </li>
-                                <li class="nav-item active">
-                                    <a class="nav-link" href="">About</a>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'About' %}">About</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
@@ -106,26 +128,77 @@
     </div>
 </header>
 
-<div class="about">
-    <div class="container">
-        <div class="row d_flex">
-            <div class="col-md-7">
-                <div class="about_img">
-                    <figure><img src="{% static 'web/assets/images/Rationlogo.png' %}" style="width:650px;height:400px;border-radius:20px;" alt="#"></figure>
-                </div>
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-lg-6 mb-4 mt-4 mb-lg-0">
+            <div class="product-image-placeholder">
+                <img src="{{sing.Item_Image.url}}" style="width:400px;height:500px;margin-top:200px;">
             </div>
-            <div class="col-md-5">
-                <div class="titlepage">
-                    <h2>About Us</h2>
-                    <p>t is a long established fact that a reader will be distracted by the readable content of a page
-                        when looking at its layout. The point of using Lorem Ipsum t is a long established fact that a
-                        reader will be distracted by the readable content of a page when looking at </p>
-                    <a class="read_more" href="#">About More</a>
-                </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="col-lg-6">
+            <h1 class="mb-3">{{sing.Item}}</h1>
+
+            <!-- Rating -->
+
+            <!-- Price -->
+            <h2 class="mb-4">₹{{sing.Item_Price}}/ kg</h2>
+
+            <!-- Description -->
+            <p class="lead mb-4">
+                {{sing.Description}}
+            </p>
+
+            <!-- Features -->
+            <div class="mb-4">
+                <h4 class="mb-3">Key Features:</h4>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> 100% Natural</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> No preservatives</li>
+                    <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> High nutritional value</li>
+                </ul>
             </div>
+            <br>
+            <h5><b>Availabilty ? : {{sing.Availability}}</b></h5> <br>
+
+            <form action="{% url 'Save_Cart' %}" method="post">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label">Quantity (In Kg):</label>
+                    <div class="input-group" style="max-width: 150px;">
+                        <input type="hidden" name="usrname" value="{{ request.session.U_Name }}">
+                        <input type="hidden" name="iname" value="{{ sing.Item }}">
+                        <input type="hidden" value="{{ sing.Item_Price }}" id="price" name="price">
+
+                        <!-- Use the calculated 'final_quantity' -->
+                        <input readonly type="number" class="form-control text-center" min="1"
+                               value="{{ final_quantity }}">
+                        <input type="hidden" name="quant" value="{{ final_quantity }}">
+
+                        <input type="hidden" id="total" name="total" value="{{ sing.Item_Price }}">
+                    </div>
+                </div>
+
+                {% if sing.Availability == 'Item Is Available' %}
+                <button class="btn btn-success w-100 py-3" type="submit">
+                    <i class="fas fa-shopping-cart me-2"></i> Add To Cart
+                </button>
+                {% else %}
+                <button class="btn btn-danger" disabled style="width:200px;height:70px;">
+                    Item Not Available
+                </button>
+                {% endif %}
+            </form>
+
+
         </div>
     </div>
 </div>
+
+
 <footer id="contact" class="bd-footer py-4 py-md-5 mt-5">
     <div class="footer">
 
@@ -150,7 +223,7 @@
                     <h4 style="color:white;" class="mb-4 border-bottom">Important Links</h4>
                     <ul class="mb-4">
                         <li class="mb-2"><a href="{% url 'Home' %}" style="color:white;">Home</a></li>
-                        <li class="mb-2"><a style="color:white;" href="{% url 'Products' %}">Products</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'Products' %}">Assigned Rations</a></li>
                         <li class="mb-2"><a style="color:white;" href="{% url 'About' %}">About Us</a></li>
                         <li class="mb-2"><a style="color:white;" href="{% url 'ContactUs' %}">Contact Us</a>
                         </li>
@@ -162,8 +235,11 @@
                 </div>
                 <div class="col-6 col-lg-2 mb-3">
                     <h4 style="color:white;" class="border-bottom mb-4">For Admins</h4>
+
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a style="color:white;" href="{% url 'AdminLoginPage' %}">Go To Admin DashBoard</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'AdminLoginPage' %}">Go To Admin
+                            DashBoard</a></li>
+
                         <li class="mb-2"><a href="/docs/5.3/examples/starter-template/">Starter template</a>
                         </li>
                         <li class="mb-2"><a href="/docs/5.3/getting-started/webpack/">Webpack</a></li>
@@ -220,6 +296,27 @@
 </footer>
 
 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function () {
+    let price = parseFloat($("#price").val());
+
+    // Get the enabled quantity input field dynamically
+    let quantityInput = $("input[type='number']:not([disabled])");
+
+    // Update total when quantity changes
+    quantityInput.change(function () {
+        let quantity = parseInt($(this).val());
+        let total = price * quantity;
+        $("#total").val(total);
+    });
+
+    // Trigger change event to update total on page load
+    quantityInput.trigger("change");
+});
+
+</script>
 <script src="{% static 'web/assets/js/jquery.min.js' %}"></script>
 <script src="{% static 'web/assets/js/popper.min.js' %}"></script>
 <script src="{% static 'web/assets/js/bootstrap.bundle.min.js' %}"></script>
@@ -233,5 +330,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
+
 </body>
 </html>

@@ -24,49 +24,50 @@
                                     <h6 class="fw-semibold mb-0">Name</h6>
                                 </th>
                                 <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Ration Card Number</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Card Color</h6>
+                                </th>
+                                <th class="border-bottom-0">
                                     <h6 class="fw-semibold mb-0">Email</h6>
                                 </th>
                                 <th class="border-bottom-0">
                                     <h6 class="fw-semibold mb-0">Mobile</h6>
                                 </th>
                                 <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Role</h6>
-                                </th>
-                                <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Created Time</h6>
+                                    <h6 class="fw-semibold mb-0">Password</h6>
                                 </th>
                                 <th class="border-bottom-0">
                                     <h6 class="fw-semibold mb-0">Actions</h6>
                                 </th>
+
 
                             </tr>
                             </thead>
                             <tbody>
                             {% for i in us_er %}
                             <tr>
-                                <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{i.Name}}</h6></td>
+                                <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{i.U_Name}}</h6></td>
                                 <td class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-1">{{i.Email}}</h6>
+                                    <h6 class="fw-semibold mb-1">{{i.Ration_Card}}</h6>
                                 </td>
                                 <td class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0 fs-4">{{i.Mobile}}</h6>
+                                    <h6 class="fw-semibold mb-0 fs-4">{{i.Card_Color}}</h6>
                                 </td>
                                 <td class="border-bottom-0">
                                     <div class="d-flex align-items-center gap-2">
-                                        <h6 class="fw-semibold mb-0 fs-4">{{i.Role}}</h6>
+                                        <h6 class="fw-semibold mb-0 fs-4">{{i.U_Mail}}</h6>
 
                                     </div>
                                 </td>
                                 <td class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0 fs-4">{{i.Created_at}}</h6>
+                                    <h6 class="fw-semibold mb-0 fs-4">{{i.U_Mobile}}</h6>
                                 </td>
                                 <td class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0 fs-4">
-                                        <a href="{% url 'Edit_User' u_id=i.id %}">
-                                            <button type="button" class="btn btn-info m-1">Edit</button>
-                                        </a>
-                                    </h6>
+                                    <h6 class="fw-semibold mb-0 fs-4">{{i.U_Pass}}</h6>
                                 </td>
+
                                 <td class="border-bottom-0">
                                     <h6 class="fw-semibold mb-0 fs-4">
                                         <a href="{% url 'Delete_User' u_id=i.id %}">
