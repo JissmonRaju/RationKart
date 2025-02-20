@@ -30,9 +30,10 @@ def save_signup(request):
         u_mail = request.POST.get('bmail')
         u_mobile = request.POST.get('bmobile')
         u_pass = request.POST.get('bpass')
+        fam_members = request.POST.get('members')
         obj = BeneficiaryRegister(U_Name=u_name, Ration_Card=ration_card, Card_Color=card_color, U_Mail=u_mail,
                                   U_Mobile=u_mobile,
-                                  U_Pass=u_pass
+                                  U_Pass=u_pass, Family_Members=fam_members
                                   )
         obj.save()
         return redirect(login_page)
@@ -92,37 +93,44 @@ def about_page(request):
 def single_product(request, si_id):
     sing = Stock.objects.get(id=si_id)
 
-    # Define product-specific default quantities
-    product_quantities = {
-        "Wheat": 10,
-        "Boiled Rice": 5,
-        "Sugar": 3,
-        "Oil": 2,
-        "Matta Rice":5,
-        "Raw Rice":7,
-        "Atta (Wheat Flour)":3
-    }
-    default_quantity = product_quantities.get(sing.Item, 1)  # Default to 1 if not listed
-
-    # Get the user beneficiary details
+    # Get beneficiary details
     prod = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+    family_members = prod.Family_Members if (prod and prod.Family_Members) else 1
 
-    # Define quantity limits based on card color
-    card_quantities = {
-        "Yellow": 10,
-        "Pink": 8,
-        "Blue": 5,
-        "White": 3
-    }
-    card_quantity = card_quantities.get(prod.Card_Color, 1) if prod else 1  # Default to 1 if no card
-
-    # Determine the final quantity (minimum of card-based limit and product-specific limit)
-    final_quantity = min(default_quantity, card_quantity)
+    # For Yellow card, the allocation is fixed for the household (not per person)
+    if prod and prod.Card_Color == "Yellow":
+        if sing.Item == "Rice":
+            final_quantity = 28  # Total household allocation for Rice under Yellow card
+        elif sing.Item == "Wheat":
+            final_quantity = 7  # Total household allocation for Wheat under Yellow card
+        else:
+            final_quantity = 35  # Default household allocation for other items
+    else:
+        # For other cards, allocations are given on a per-person basis.
+        # Pink card now supports both Rice and Wheat selections.
+        allocations = {
+            "Pink": {"Rice": 4, "Wheat": 1},
+            "Blue": {"Rice": 2},
+            "White": {"Rice": 8.90, "Wheat": 6.70}
+        }
+        if prod and prod.Card_Color in allocations and sing.Item in allocations[prod.Card_Color]:
+            per_member_qty = allocations[prod.Card_Color][sing.Item]
+            final_quantity = per_member_qty * family_members
+        else:
+            # Fallback: For products not covered above, use default per-person allocation then multiply
+            product_defaults = {
+                "Wheat": 3,
+                "Boiled Rice": 5,
+                "Matta Rice": 5,
+                "Raw Rice": 7
+            }
+            default_quantity = product_defaults.get(sing.Item, 1)
+            final_quantity = default_quantity * family_members
 
     return render(request, 'SingleProduct.html', {
         'sing': sing,
         'prod': prod,
-        'final_quantity': final_quantity  # Pass this value to the template
+        'final_quantity': final_quantity
     })
 
 
@@ -162,3 +170,8 @@ def delete_cart(request, crt_id):
 
 def sin_up(request):
     return render(request, 'ShopSignUp.html')
+
+
+def my_details(request):
+    details = BeneficiaryRegister.objects.all()
+    return render(request, 'MyDetails.html', {'details': details})
