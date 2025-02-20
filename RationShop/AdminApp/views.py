@@ -7,8 +7,6 @@ from django.contrib.auth.models import User
 from WebApp.models import ContactDB,BeneficiaryRegister
 
 
-
-
 # Create your views here.
 
 def index(request):
@@ -16,13 +14,9 @@ def index(request):
 
 
 
-
-
-
 def display_user(request):
     us_er = BeneficiaryRegister.objects.all()
     return render(request, 'Display_User.html', {'us_er': us_er})
-
 
 
 

@@ -110,7 +110,11 @@
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                                         {% if request.session.U_Name %}
                                         <h2 style="text-align:center;">Hi,{{request.session.U_Name}}</h2>
-                                        <hr style="border:solid;">
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        <button class="dropdown-item">
+                                            <a href="{% url 'MyDetails' %}">My Details</a>
+                                        </button>
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
                                         {% else %}
                                         <a class="dropdown-item" href="{% url 'LoginPage' %}">Login</a>
@@ -169,15 +173,27 @@
                 <div class="mb-4">
                     <label class="form-label">Quantity (In Kg):</label>
                     <div class="input-group" style="max-width: 150px;">
+                        <!-- Hidden fields for user, item, and price -->
                         <input type="hidden" name="usrname" value="{{ request.session.U_Name }}">
                         <input type="hidden" name="iname" value="{{ sing.Item }}">
-                        <input type="hidden" value="{{ sing.Item_Price }}" id="price" name="price">
+                        <input type="hidden" id="price" name="price" value="{{ sing.Item_Price }}">
 
-                        <!-- Use the calculated 'final_quantity' -->
-                        <input readonly type="number" class="form-control text-center" min="1"
-                               value="{{ final_quantity }}">
+                        <!-- If you want to display the family's member count (optional) -->
+                        <input type="hidden" id="member" value="{{ prod.Family_Members }}">
+
+                        <!-- Display final_quantity as read-only -->
+                        <input
+                                readonly
+                                type="number"
+                                class="form-control text-center"
+                                min="1"
+                                value="{{ final_quantity }}"
+                        >
+
+                        <!-- Hidden input so quantity is submitted with the form -->
                         <input type="hidden" name="quant" value="{{ final_quantity }}">
 
+                        <!-- Hidden total field (auto-updated via JS) -->
                         <input type="hidden" id="total" name="total" value="{{ sing.Item_Price }}">
                     </div>
                 </div>
@@ -300,22 +316,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script>
     $(document).ready(function () {
-    let price = parseFloat($("#price").val());
+        let price = parseFloat($("#price").val());
+        let quantityInput = $("input[type='number'][readonly]"); // The read-only quantity field
 
-    // Get the enabled quantity input field dynamically
-    let quantityInput = $("input[type='number']:not([disabled])");
-
-    // Update total when quantity changes
-    quantityInput.change(function () {
-        let quantity = parseInt($(this).val());
+        // On load, update the total
+        let quantity = parseInt(quantityInput.val());
         let total = price * quantity;
         $("#total").val(total);
     });
-
-    // Trigger change event to update total on page load
-    quantityInput.trigger("change");
-});
-
 </script>
 <script src="{% static 'web/assets/js/jquery.min.js' %}"></script>
 <script src="{% static 'web/assets/js/popper.min.js' %}"></script>

@@ -22,7 +22,8 @@ urlpatterns = [
     path('Save_Cart/',views.save_cart,name='Save_Cart'),
     path('DeleteCart/<int:crt_id>/',views.delete_cart,name='DeleteCart'),
     
-    path('Shop/',views.sin_up,name='Shop')
+    path('Shop/',views.sin_up,name='Shop'),
+    path('MyDetails/',views.my_details,name='MyDetails')
 
 
 

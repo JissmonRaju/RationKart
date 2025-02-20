@@ -16,6 +16,7 @@ class BeneficiaryRegister(models.Model):
     U_Mail = models.EmailField(max_length=100)
     U_Mobile = models.CharField(max_length=20)
     U_Pass = models.CharField(max_length=100)
+    Family_Members = models.IntegerField(null=True)
 
 
 class ContactDB(models.Model):
