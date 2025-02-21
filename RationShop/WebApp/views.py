@@ -9,13 +9,16 @@ from AdminApp.views import index
 # Create your views here.
 
 def home(request):
+    details = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
     stks = Stock.objects.all()
-    return render(request, 'Home.html', {'stks': stks})
+    return render(request, 'Home.html', {'stks': stks,'details': details})
 
 
 def products(request):
+    details = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+
     prod = Stock.objects.all()
-    return render(request, 'Products.html', {'prod': prod})
+    return render(request, 'Products.html', {'prod': prod,'details':details})
 
 
 def signup_page(request):
@@ -72,7 +75,9 @@ def log_out(request):
 
 
 def contact_us(request):
-    return render(request, 'ContactUs.html')
+    details = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+
+    return render(request, 'ContactUs.html',{'details':details})
 
 
 def save_contact(request):
@@ -91,23 +96,27 @@ def about_page(request):
 
 
 def single_product(request, si_id):
+    details = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+
     sing = Stock.objects.get(id=si_id)
 
     # Get beneficiary details
     prod = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
     family_members = prod.Family_Members if (prod and prod.Family_Members) else 1
 
+    # Check if item is already in the cart
+    user_cart = CartDB.objects.filter(User_Name=request.session.get('U_Name'), Item_Name=sing).exists()
+    already_in_cart = user_cart  # Pass this to the template
+
     # For Yellow card, the allocation is fixed for the household (not per person)
     if prod and prod.Card_Color == "Yellow":
         if sing.Item == "Rice":
-            final_quantity = 28  # Total household allocation for Rice under Yellow card
+            final_quantity = 28
         elif sing.Item == "Wheat":
-            final_quantity = 7  # Total household allocation for Wheat under Yellow card
+            final_quantity = 7
         else:
-            final_quantity = 35  # Default household allocation for other items
+            final_quantity = 35
     else:
-        # For other cards, allocations are given on a per-person basis.
-        # Pink card now supports both Rice and Wheat selections.
         allocations = {
             "Pink": {"Rice": 4, "Wheat": 1},
             "Blue": {"Rice": 2},
@@ -117,26 +126,25 @@ def single_product(request, si_id):
             per_member_qty = allocations[prod.Card_Color][sing.Item]
             final_quantity = per_member_qty * family_members
         else:
-            # Fallback: For products not covered above, use default per-person allocation then multiply
-            product_defaults = {
-                "Wheat": 3,
-                "Boiled Rice": 5,
-                "Matta Rice": 5,
-                "Raw Rice": 7
-            }
+            product_defaults = {"Wheat": 3, "Boiled Rice": 5, "Matta Rice": 5, "Raw Rice": 7}
             default_quantity = product_defaults.get(sing.Item, 1)
             final_quantity = default_quantity * family_members
 
     return render(request, 'SingleProduct.html', {
         'sing': sing,
         'prod': prod,
-        'final_quantity': final_quantity
+        'final_quantity': final_quantity,
+        'already_in_cart': already_in_cart,
+        'details':details
     })
 
 
+
 def cart_page(request):
+    details = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+
     crt = CartDB.objects.filter(User_Name=request.session['U_Name'])
-    return render(request, 'CartPage.html', {'crt': crt})
+    return render(request, 'CartPage.html', {'crt': crt,'details':details})
 
 
 def save_cart(request):
@@ -151,6 +159,8 @@ def save_cart(request):
             img = x.Item_Image
         except Stock.DoesNotExist:
             img = None
+        if CartDB.objects.filter(User_Name=usr_name, Item_Name=i_name).exists():
+            return redirect(products)
         obj = CartDB(
             User_Name=usr_name,
             Item_Name=i_name,
@@ -172,6 +182,7 @@ def sin_up(request):
     return render(request, 'ShopSignUp.html')
 
 
-def my_details(request):
-    details = BeneficiaryRegister.objects.all()
+def my_details(request,my_id):
+    details = BeneficiaryRegister.objects.get(id=my_id)
+
     return render(request, 'MyDetails.html', {'details': details})

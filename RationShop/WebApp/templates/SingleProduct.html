@@ -112,7 +112,7 @@
                                         <h2 style="text-align:center;">Hi,{{request.session.U_Name}}</h2>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <button class="dropdown-item">
-                                            <a href="{% url 'MyDetails' %}">My Details</a>
+                                            <a href="{% url 'MyDetails' details.id %}">My Details</a>
                                         </button>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
@@ -173,24 +173,22 @@
                 <div class="mb-4">
                     <label class="form-label">Quantity (In Kg):</label>
                     <div class="input-group" style="max-width: 150px;">
-                        <!-- Hidden fields for user, item, and price -->
                         <input type="hidden" name="usrname" value="{{ request.session.U_Name }}">
                         <input type="hidden" name="iname" value="{{ sing.Item }}">
                         <input type="hidden" id="price" name="price" value="{{ sing.Item_Price }}">
-
-                        <!-- If you want to display the family's member count (optional) -->
                         <input type="hidden" id="member" value="{{ prod.Family_Members }}">
 
-                        <!-- Display final_quantity as read-only -->
+                        <!-- Read-only quantity field -->
                         <input
                                 readonly
+                                id="quantity"
                                 type="number"
                                 class="form-control text-center"
                                 min="1"
                                 value="{{ final_quantity }}"
                         >
 
-                        <!-- Hidden input so quantity is submitted with the form -->
+                        <!-- Hidden field for quantity to ensure it gets submitted -->
                         <input type="hidden" name="quant" value="{{ final_quantity }}">
 
                         <!-- Hidden total field (auto-updated via JS) -->
@@ -199,13 +197,19 @@
                 </div>
 
                 {% if sing.Availability == 'Item Is Available' %}
-                <button class="btn btn-success w-100 py-3" type="submit">
-                    <i class="fas fa-shopping-cart me-2"></i> Add To Cart
-                </button>
+                    {% if already_in_cart %}
+                    <button class="btn btn-secondary w-100 py-3" disabled>
+                        <i class="fas fa-shopping-cart me-2"></i> Already in Cart
+                    </button>
+                    {% else %}
+                    <button class="btn btn-success w-100 py-3" type="submit">
+                        <i class="fas fa-shopping-cart me-2"></i> Add To Cart
+                    </button>
+                    {% endif %}
                 {% else %}
-                <button class="btn btn-danger" disabled style="width:200px;height:70px;">
-                    Item Not Available
-                </button>
+                    <button class="btn btn-danger" disabled style="width:200px;height:70px;">
+                        Item Not Available
+                    </button>
                 {% endif %}
             </form>
 
@@ -317,14 +321,18 @@
 <script>
     $(document).ready(function () {
         let price = parseFloat($("#price").val());
-        let quantityInput = $("input[type='number'][readonly]"); // The read-only quantity field
+        let quantityInput = $("#quantity"); // The read-only quantity field
+        let totalField = $("#total");  // Hidden total field
+        let hiddenQuantityField = $("input[name='quant']"); // Hidden quantity field
 
         // On load, update the total
         let quantity = parseInt(quantityInput.val());
         let total = price * quantity;
-        $("#total").val(total);
+        totalField.val(total);
+        hiddenQuantityField.val(quantity); // Ensure form submission gets updated quantity
     });
 </script>
+
 <script src="{% static 'web/assets/js/jquery.min.js' %}"></script>
 <script src="{% static 'web/assets/js/popper.min.js' %}"></script>
 <script src="{% static 'web/assets/js/bootstrap.bundle.min.js' %}"></script>

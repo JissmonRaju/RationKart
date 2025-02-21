@@ -110,7 +110,7 @@
                                         <h2 style="text-align:center;">Hi,{{request.session.U_Name}}</h2>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <button class="dropdown-item">
-                                            <a href="{% url 'MyDetails' %}">My Details</a>
+                                            <a href="{% url 'MyDetails' details.id %}">My Details</a>
                                         </button>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
@@ -129,14 +129,14 @@
         </div>
     </div>
 </header>
-{% for i in details %}
+
 <div class="container py-5">
     <h1 class="text-center mb-4">Personal Information</h1>
 
     <div class="card p-4 mb-4">
         <div class="d-flex align-items-center">
             <div>
-                <h2 class="mb-1">Name of Card Holder : <b>{{i.U_Name}}</b></h2>
+                <h2 class="mb-1">Name of Card Holder : <b>{{details.U_Name}}</b></h2>
             </div>
         </div>
     </div>
@@ -149,7 +149,7 @@
                     <i class="fas fa-envelope me-3 text-primary"></i>
                     <div>
                         <div class="text-muted small">Email ID :</div>
-                        <div>{{i.U_Mail}}</div>
+                        <div>{{details.U_Mail}}</div>
                     </div>
                 </div>
             </div>
@@ -162,7 +162,7 @@
                     <i class="fas fa-phone me-3 text-primary"></i>
                     <div>
                         <div class="text-muted small">Phone Number : </div>
-                        <div>+91 {{i.U_Mobile}}</div>
+                        <div>+91 {{details.U_Mobile}}</div>
                     </div>
                 </div>
             </div>
@@ -175,7 +175,7 @@
                     <i class="fas fa-id-card me-3 text-primary"></i>
                     <div>
                         <div class="text-muted small">Ration Card Number : </div>
-                        <div>{{i.Ration_Card}}</div>
+                        <div>{{details.Ration_Card}}</div>
                     </div>
                 </div>
             </div>
@@ -188,7 +188,7 @@
                     <i class="fas fa-users me-3 text-primary"></i>
                     <div>
                         <div class="text-muted small">Number Of Family Members : </div>
-                        <div>{{i.Family_Members}}</div>
+                        <div>{{details.Family_Members}}</div>
                     </div>
                 </div>
             </div>
@@ -201,7 +201,7 @@
                     <i class="fas fa-calendar me-3 text-primary"></i>
                     <div>
                         <div class="text-muted small">Ration Card Color :</div>
-                        <div>{{i.Card_Color}}</div>
+                        <div>{{details.Card_Color}}</div>
                     </div>
                 </div>
             </div>
@@ -211,7 +211,6 @@
 
     </div>
 </div>
-{% endfor %}
 
 <footer id="contact" class="bd-footer py-4 py-md-5 mt-5">
     <div class="footer">
