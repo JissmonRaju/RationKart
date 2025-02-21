@@ -23,7 +23,7 @@ urlpatterns = [
     path('DeleteCart/<int:crt_id>/',views.delete_cart,name='DeleteCart'),
     
     path('Shop/',views.sin_up,name='Shop'),
-    path('MyDetails/',views.my_details,name='MyDetails')
+    path('MyDetails/<int:my_id>/',views.my_details,name='MyDetails')
 
 
 
