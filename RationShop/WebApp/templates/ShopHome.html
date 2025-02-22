@@ -2,6 +2,8 @@
 {% load static %}
 <html lang="en">
 <head>
+
+
     <!-- basic -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -34,11 +36,145 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .profile-image {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .info-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+    <style>
+        .why-choose-section {
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .section-title {
+            color: #1F2937;
+            margin-bottom: 1rem;
+        }
+
+        .section-description {
+            color: #4B5563;
+            margin-bottom: 3rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .feature-card {
+            background-color: #F9FAFB;
+            padding: 2rem;
+            border-radius: 8px;
+            height: 100%;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1.5rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .feature-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #92400E;
+        }
+
+        .feature-title {
+            color: #1F2937;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .feature-description {
+            color: #4B5563;
+            margin-bottom: 0;
+        }
+    </style>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Ration Shop</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        .hero-section {
+            background-color: #FEF3C7;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-text {
+            color: #92400E;
+            font-weight: 500;
+        }
+
+        .btn-primary-custom {
+            background-color: #92400E;
+            border-color: #92400E;
+            color: white;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: #78350F;
+            border-color: #78350F;
+            color: white;
+        }
+
+        .btn-outline-custom {
+            border-color: #92400E;
+            color: #92400E;
+        }
+
+        .btn-outline-custom:hover {
+            background-color: #FEF3C7;
+            border-color: #92400E;
+            color: #92400E;
+        }
+
+        .feature-icon {
+            width: 3rem;
+            height: 3rem;
+            background-color: #FEF3C7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .feature-icon i {
+            color: #92400E;
+            font-size: 1.25rem;
+        }
+
+        .contact-strip {
+            background-color: #92400E;
+            color: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+    </style>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body class="main-layout inner_page">
-
 <header>
     <!-- header inner -->
     <div class="header">
@@ -48,9 +184,10 @@
                     <div class="full">
                         <div class="center-desk">
                             <div class="logo">
-                                <a href="{% url 'Home' %}"><img src="{% static 'web/assets/images/Rationlogo.png' %}"
-                                                                style="width:300px;height:100px;"
-                                                                alt="#"/></a>
+                                <a href="{% url 'ShopHome' %}"><img
+                                        src="{% static 'web/assets/images/Rationlogo.png' %}"
+                                        style="width:300px;height:100px;"
+                                        alt="#"/></a>
                             </div>
                         </div>
                     </div>
@@ -65,13 +202,13 @@
                         <div class="collapse navbar-collapse" id="navbarsExample04">
                             <ul class="navbar-nav mr-auto">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'Home' %}"> Home </a>
+                                    <a class="nav-link" href="{% url 'ShopHome' %}"> Home </a>
                                 </li>
-                                <li class="nav-item ">
+                                <li class="nav-item active">
                                     <a class="nav-link" href="{% url 'Products' %}">Ration</a>
                                 </li>
 
-                                <li class="nav-item active">
+                                <li class="nav-item">
                                     <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
                                 </li>
                                 <li class="nav-item">
@@ -90,11 +227,12 @@
                                         <i class="bi bi-person-circle" style="font-size: 2rem;"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                                        {% if request.session.U_Name %}
-                                        <h2 style="text-align:center;">Hi,{{request.session.U_Name}}</h2>
+                                        {% if request.session.Reg_Num %}
+                                        <h2 style="text-align:center;">Hi,{{request.session.Reg_Num}}</h2>
+
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <button class="dropdown-item">
-                                            <a href="{% url 'MyDetails'  details.id %}">My Details</a>
+                                            <a href="{% url 'MyDetails' det.id %}">My Details</a>
                                         </button>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
@@ -113,88 +251,132 @@
         </div>
     </div>
 </header>
+<div class="container py-4">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <span class="welcome-text">Welcome to Your Local Ration Shop</span>
+        <h1 class="display-5 fw-bold mt-2 mb-3">Quality Essentials for Your Daily Needs</h1>
+        <p class="fs-5 text-muted mb-4">
+            Providing the community with essential goods at fair prices. Your trusted partner in quality groceries and
+            household items.
+        </p>
+        <div class="d-flex gap-3">
+            <button class="btn btn-primary-custom d-flex align-items-center gap-2">
+                <i class="fas fa-shopping-bag"></i>
+                View Products
+            </button>
+            <button class="btn btn-outline-custom">Contact Us</button>
+        </div>
+    </div>
 
-
-<div class="container py-5">
-    <h1 class="mb-4">
-        <i class="fas fa-shopping-cart"></i> Your Cart
-    </h1>
-
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Cart Items -->
-            <div class="card mb-4">
+    <!-- Features Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Essential Products -->
+        <div class="col-md-4">
+            <div class="card h-100 border-light">
                 <div class="card-body">
-                    {% for i in crt %}
-
-                    <!-- Rice -->
-                    <div class="row mb-4 align-items-center">
-                        <div class="col-md-6">
-                            <p class="text-muted small mb-1">Product Name</p>
-
-                            <h5 class="mb-0">{{i.Item_Name}}</h5>
-                        </div>
-
-                        <div class="col-md-3">
-                            <p class="text-muted small mb-1">Quantity (in Kg)</p>
-
-                            <div class="input-group">
-
-                                <input type="text" disabled class="form-control text-center"
-                                       value="{{i.Item_Quantity}}">
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <p class="text-muted small mb-1">Price</p>
-
-                            <p class="mb-0">₹ {{i.I_Total}}</p>
-                            <small class="text-muted">₹ {{i.I_Price}} / kg</small>
-                        </div>
-                        <div class="col-md-1">
-                            <a href="{% url 'DeleteCart' crt_id=i.id %}">
-                                <button class="btn btn-link text-danger" type="submit">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </a>
-                        </div>
+                    <div class="feature-icon">
+                        <i class="fas fa-shopping-bag"></i>
                     </div>
-
-                    <!-- Wheat Flour -->
-
-                    {% endfor %}
-
+                    <h3 class="h5 fw-bold mb-2">Essential Products</h3>
+                    <p class="text-muted">Wide range of daily necessities including grains, pulses, oil, and household
+                        items.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Order Summary -->
-        <div class="col-lg-4">
-            <div class="card">
+        <!-- Convenient Hours -->
+        <div class="col-md-4">
+            <div class="card h-100 border-light">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">Order Summary</h5>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span>Subtotal (4 items)</span>
-                        <span>₹405.00</span>
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
                     </div>
-                    <div class="d-flex justify-content-between mb-4">
-                        <span>Tax (5%)</span>
-                        <span>₹20.25</span>
+                    <h3 class="h5 fw-bold mb-2">Convenient Hours</h3>
+                    <p class="text-muted">Open daily from 8 AM to 8 PM to serve you better. Special hours for senior
+                        citizens.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Easy Location -->
+        <div class="col-md-4">
+            <div class="card h-100 border-light">
+                <div class="card-body">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marker-alt"></i>
                     </div>
-                    <div class="d-flex justify-content-between mb-4">
-                        <strong>Total</strong>
-                        <strong>₹425.25</strong>
-                    </div>
-                    <button class="btn btn-dark w-100">
-                        <i class="fas fa-lock me-2"></i>Proceed to Checkout
-                    </button>
-                    <small class="text-muted d-block text-center mt-3">
-                        Delivery schedule will be confirmed after checkout
-                    </small>
+                    <h3 class="h5 fw-bold mb-2">Easy Location</h3>
+                    <p class="text-muted">Centrally located in your neighborhood with ample parking space available.</p>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Contact Strip -->
+    <div class="contact-strip d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-phone"></i>
+            <span>Need assistance? Call us at (555) 123-4567</span>
+        </div>
+        <button class="btn btn-light">Get Directions</button>
+    </div>
 </div>
+
+
+<section class="why-choose-section">
+    <div class="container">
+        <h2 class="section-title">Why Choose Us?</h2>
+        <p class="section-description">We take pride in serving our community with the best quality products and
+            exceptional service.</p>
+
+        <div class="row g-4">
+            <!-- Quality Products -->
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 18H4V6H20V18Z"/>
+                            <path d="M12 7H6V9H12V7Z"/>
+                            <path d="M12 11H6V13H12V11Z"/>
+                            <path d="M12 15H6V17H12V15Z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Quality Products</h3>
+                    <p class="feature-description">We source the finest quality essentials for your daily needs.</p>
+                </div>
+            </div>
+
+            <!-- Fair Pricing -->
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                            <path d="M12.31 11.14c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Fair Pricing</h3>
+                    <p class="feature-description">Competitive prices that make quality accessible to everyone.</p>
+                </div>
+            </div>
+
+            <!-- Fresh Stock -->
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19 3H5C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                            <path d="M7 12h2v5H7zm4-7h2v12h-2zm4 4h2v8h-2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Fresh Stock</h3>
+                    <p class="feature-description">Regular inventory updates to ensure freshness and quality.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 
 <footer id="contact" class="bd-footer py-4 py-md-5 mt-5">
@@ -233,7 +415,6 @@
                 </div>
                 <div class="col-6 col-lg-2 mb-3">
                     <h4 style="color:white;" class="border-bottom mb-4">For Admins</h4>
-
                     <ul class="list-unstyled">
                         <li class="mb-2"><a style="color:white;" href="{% url 'AdminLoginPage' %}">Go To Admin
                             DashBoard</a></li>
@@ -293,8 +474,8 @@
     </div>
 </footer>
 
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<!-- end footer -->
+<!-- Javascript files-->
 <script src="{% static 'web/assets/js/jquery.min.js' %}"></script>
 <script src="{% static 'web/assets/js/popper.min.js' %}"></script>
 <script src="{% static 'web/assets/js/bootstrap.bundle.min.js' %}"></script>
@@ -308,5 +489,11 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
+
+<!-- Bootstrap JS Bundle -->
+
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
