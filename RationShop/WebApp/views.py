@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
+from django.urls import reverse
+
 from AdminApp.models import Stock
 from WebApp.models import BeneficiaryRegister, ContactDB, CartDB, ShopOwner
 from AdminApp.views import index
@@ -9,13 +11,13 @@ from AdminApp.views import index
 # Create your views here.
 
 def home(request):
-    details = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
     stks = Stock.objects.all()
     return render(request, 'Home.html', {'stks': stks,'details': details})
 
 
 def products(request):
-    details = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
     prod = Stock.objects.all()
     return render(request, 'Products.html', {'prod': prod,'details':details})
@@ -41,6 +43,24 @@ def save_signup(request):
         obj.save()
         return redirect(login_page)
 
+def shop_signup(request):
+    if request.method == 'POST':
+        u_name = request.POST.get('sname')
+        reg_num = request.POST.get('regnumber')
+        s_mail = request.POST.get('smail')
+        s_mobile = request.POST.get('smobile')
+        s_pass = request.POST.get('spass')
+        obj = ShopOwner(S_Name=u_name,Reg_Num=reg_num, S_Mail=s_mail,
+                                  S_Mobile=s_mobile,
+                                  S_Pass=s_pass
+                                  )
+        obj.save()
+        return redirect(login_page)
+
+def shop_home(request):
+    det = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+
+    return render(request,'ShopHome.html',{'det':det})
 
 def login_page(request):
     return render(request, 'LoginPage.html')
@@ -54,14 +74,14 @@ def save_login(request):
         if user is not None and user.is_superuser:
             login(request, user)
             return redirect(index)
-        elif BeneficiaryRegister.objects.filter(U_Name=unam_e, U_Pass=pass_words).exists():
-            request.session['U_Name'] = unam_e
+        elif BeneficiaryRegister.objects.filter(Ration_Card=unam_e, U_Pass=pass_words).exists():
+            request.session['Ration_Card'] = unam_e
             request.session['U_Pass'] = pass_words
             return redirect(home)
-        elif ShopOwner.objects.filter(S_Name=unam_e, S_Pass=pass_words).exists():
-            request.session['S_Name'] = unam_e
+        elif ShopOwner.objects.filter(Reg_Num=unam_e, S_Pass=pass_words).exists():
+            request.session['Reg_Num'] = unam_e
             request.session['S_Pass'] = pass_words
-            return redirect(home)
+            return redirect(reverse('ShopHome'))
         else:
             return redirect(login_page)
     else:
@@ -69,13 +89,13 @@ def save_login(request):
 
 
 def log_out(request):
-    del request.session['U_Name']
+    del request.session['Ration_Card']
     del request.session['U_Pass']
     return redirect(login_page)
 
 
 def contact_us(request):
-    details = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
     return render(request, 'ContactUs.html',{'details':details})
 
@@ -96,16 +116,16 @@ def about_page(request):
 
 
 def single_product(request, si_id):
-    details = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
     sing = Stock.objects.get(id=si_id)
 
     # Get beneficiary details
-    prod = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+    prod = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
     family_members = prod.Family_Members if (prod and prod.Family_Members) else 1
 
     # Check if item is already in the cart
-    user_cart = CartDB.objects.filter(User_Name=request.session.get('U_Name'), Item_Name=sing).exists()
+    user_cart = CartDB.objects.filter(User_Name=request.session.get('Ration_Card'), Item_Name=sing).exists()
     already_in_cart = user_cart  # Pass this to the template
 
     # For Yellow card, the allocation is fixed for the household (not per person)
@@ -141,9 +161,9 @@ def single_product(request, si_id):
 
 
 def cart_page(request):
-    details = BeneficiaryRegister.objects.filter(U_Name=request.session.get('U_Name')).first()
+    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
-    crt = CartDB.objects.filter(User_Name=request.session['U_Name'])
+    crt = CartDB.objects.filter(User_Name=request.session['Ration_Card'])
     return render(request, 'CartPage.html', {'crt': crt,'details':details})
 
 
@@ -184,5 +204,8 @@ def sin_up(request):
 
 def my_details(request,my_id):
     details = BeneficiaryRegister.objects.get(id=my_id)
+    det = ShopOwner.objects.get(id=my_id)
 
-    return render(request, 'MyDetails.html', {'details': details})
+    return render(request, 'MyDetails.html', {'details': details,'det':det})
+
+
