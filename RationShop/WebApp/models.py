@@ -33,3 +33,12 @@ class CartDB(models.Model):
     I_Price = models.IntegerField()
     I_Total = models.IntegerField()
     Item_Image = models.ImageField(upload_to="Cart Images")
+
+
+
+class OrderDB(models.Model):
+    Ord_Name = models.CharField(max_length=100)
+
+
+
+

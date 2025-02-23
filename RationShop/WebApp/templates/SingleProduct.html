@@ -108,8 +108,8 @@
                                         <i class="bi bi-person-circle" style="font-size: 2rem;"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                                        {% if request.session.U_Name %}
-                                        <h2 style="text-align:center;">Hi,{{request.session.U_Name}}</h2>
+                                        {% if request.session.Ration_Card %}
+                                        <h2 style="text-align:center;">Hi,{{request.session.Ration_Card}}</h2>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' details.id %}">My Details</a>
@@ -173,7 +173,7 @@
                 <div class="mb-4">
                     <label class="form-label">Quantity (In Kg):</label>
                     <div class="input-group" style="max-width: 150px;">
-                        <input type="hidden" name="usrname" value="{{ request.session.U_Name }}">
+
                         <input type="hidden" name="iname" value="{{ sing.Item }}">
                         <input type="hidden" id="price" name="price" value="{{ sing.Item_Price }}">
                         <input type="hidden" id="member" value="{{ prod.Family_Members }}">

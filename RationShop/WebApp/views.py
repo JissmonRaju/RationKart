@@ -13,14 +13,14 @@ from AdminApp.views import index
 def home(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
     stks = Stock.objects.all()
-    return render(request, 'Home.html', {'stks': stks,'details': details})
+    return render(request, 'Home.html', {'stks': stks, 'details': details})
 
 
 def products(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
     prod = Stock.objects.all()
-    return render(request, 'Products.html', {'prod': prod,'details':details})
+    return render(request, 'Products.html', {'prod': prod, 'details': details})
 
 
 def signup_page(request):
@@ -43,6 +43,7 @@ def save_signup(request):
         obj.save()
         return redirect(login_page)
 
+
 def shop_signup(request):
     if request.method == 'POST':
         u_name = request.POST.get('sname')
@@ -50,17 +51,19 @@ def shop_signup(request):
         s_mail = request.POST.get('smail')
         s_mobile = request.POST.get('smobile')
         s_pass = request.POST.get('spass')
-        obj = ShopOwner(S_Name=u_name,Reg_Num=reg_num, S_Mail=s_mail,
-                                  S_Mobile=s_mobile,
-                                  S_Pass=s_pass
-                                  )
+        obj = ShopOwner(S_Name=u_name, Reg_Num=reg_num, S_Mail=s_mail,
+                        S_Mobile=s_mobile,
+                        S_Pass=s_pass
+                        )
         obj.save()
         return redirect(login_page)
+
 
 def shop_home(request):
     det = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
 
-    return render(request,'ShopHome.html',{'det':det})
+    return render(request, 'ShopHome.html', {'det': det})
+
 
 def login_page(request):
     return render(request, 'LoginPage.html')
@@ -97,7 +100,7 @@ def log_out(request):
 def contact_us(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
-    return render(request, 'ContactUs.html',{'details':details})
+    return render(request, 'ContactUs.html', {'details': details})
 
 
 def save_contact(request):
@@ -155,22 +158,26 @@ def single_product(request, si_id):
         'prod': prod,
         'final_quantity': final_quantity,
         'already_in_cart': already_in_cart,
-        'details':details
+        'details': details
     })
-
 
 
 def cart_page(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
-
-    crt = CartDB.objects.filter(User_Name=request.session['Ration_Card'])
-    return render(request, 'CartPage.html', {'crt': crt,'details':details})
+    shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    if details:
+        crt = CartDB.objects.filter(User_Name=request.session['Ration_Card'])
+    elif shp:
+        crt = CartDB.objects.filter(User_Name=request.session['Reg_Num'])
+    else:
+        crt=None
+    return render(request, 'CartPage.html', {'crt': crt, 'details': details,'shp':shp})
 
 
 def save_cart(request):
     if request.method == 'POST':
         i_name = request.POST.get('iname')
-        usr_name = request.POST.get('usrname')
+        usr_name = request.session.get('Ration_Card') or request.session.get('Reg_Num')
         i_price = request.POST.get('price')
         i_quant = request.POST.get('quant')
         i_total = request.POST.get('total')
@@ -202,10 +209,27 @@ def sin_up(request):
     return render(request, 'ShopSignUp.html')
 
 
-def my_details(request,my_id):
-    details = BeneficiaryRegister.objects.get(id=my_id)
-    det = ShopOwner.objects.get(id=my_id)
+def my_details(request, my_id):
+    details = BeneficiaryRegister.objects.filter(id=my_id).first()
+    det = ShopOwner.objects.filter(id=my_id).first()
 
-    return render(request, 'MyDetails.html', {'details': details,'det':det})
+    return render(request, 'MyDetails.html', {'details': details, 'det': det})
 
+
+def order_page(request):
+    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
+    ord = CartDB.objects.all()
+    return render(request,'OrderPage.html',{'details': details,'ord':ord})
+
+
+def checkout_page(request):
+    shp_ownr = request.session.get('Reg_Num')
+    usr_cust = request.session.get('Ration_Card')
+    if shp_ownr:
+        chk = CartDB.objects.filter(User_Name=shp_ownr)
+    elif usr_cust:
+        chk = CartDB.objects.filter(User_Name=usr_cust)
+    else:
+        chk=None
+    return render(request,'CheckOut.html',{'chk':chk})
 
