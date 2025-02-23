@@ -25,7 +25,13 @@ urlpatterns = [
     path('Shop/',views.sin_up,name='Shop'),
     path('MyDetails/<int:my_id>/',views.my_details,name='MyDetails'),
     path('ShopHome/',views.shop_home,name='ShopHome'),
-    path('SaveShop/',views.shop_signup,name='SaveShop')
+    path('SaveShop/',views.shop_signup,name='SaveShop'),
+
+    path('OrderPage/',views.order_page,name='OrderPage'),
+
+    path('CheckOut/',views.checkout_page,name='CheckOut')
+
+
 
 
 

@@ -106,8 +106,8 @@
                                         <i class="bi bi-person-circle" style="font-size: 2rem;"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                                        {% if request.session.U_Name %}
-                                        <h2 style="text-align:center;">Hi,{{request.session.U_Name}}</h2>
+                                        {% if request.session.Ration_Card %}
+                                        <h2 style="text-align:center;">Hi,{{request.session.Ration_Card}}</h2>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' details.id %}">My Details</a>
@@ -132,16 +132,94 @@
 
 <div class="container py-5">
     <h1 class="text-center mb-4">Personal Information</h1>
+    {% if request.session.U_Name %}
 
-    <div class="card p-4 mb-4">
+        <div class="card p-4 mb-4">
+            <div class="d-flex align-items-center">
+                <div>
+                    <h2 class="mb-1">Name of Card Holder : <b>{{details.U_Name}}</b></h2>
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <!-- Email -->
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-envelope me-3 text-primary"></i>
+                        <div>
+                            <div class="text-muted small">Email ID :</div>
+                            <div>{{details.U_Mail}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-phone me-3 text-primary"></i>
+                        <div>
+                            <div class="text-muted small">Phone Number :</div>
+                            <div>+91 {{details.U_Mobile}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-id-card me-3 text-primary"></i>
+                        <div>
+                            <div class="text-muted small">Ration Card Number :</div>
+                            <div>{{details.Ration_Card}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department -->
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-users me-3 text-primary"></i>
+                        <div>
+                            <div class="text-muted small">Number Of Family Members :</div>
+                            <div>{{details.Family_Members}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Join Date -->
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-calendar me-3 text-primary"></i>
+                        <div>
+                            <div class="text-muted small">Ration Card Color :</div>
+                            <div>{{details.Card_Color}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee ID -->
+
+        </div>
+    {% elif request.session.Reg_Num %}
+        <div class="card p-4 mb-4">
         <div class="d-flex align-items-center">
             <div>
-                <h2 class="mb-1">Name of Card Holder : <b>{{details.U_Name}}</b></h2>
+                <h2 class="mb-1">Name of Shop Owner : <b>{{det.S_Name}}</b></h2>
             </div>
         </div>
     </div>
 
-    <div class="row g-4">
+        <div class="row g-4">
         <!-- Email -->
         <div class="col-md-6">
             <div class="card p-3">
@@ -149,7 +227,7 @@
                     <i class="fas fa-envelope me-3 text-primary"></i>
                     <div>
                         <div class="text-muted small">Email ID :</div>
-                        <div>{{details.U_Mail}}</div>
+                        <div>{{det.S_Mail}}</div>
                     </div>
                 </div>
             </div>
@@ -161,8 +239,8 @@
                 <div class="d-flex align-items-center">
                     <i class="fas fa-phone me-3 text-primary"></i>
                     <div>
-                        <div class="text-muted small">Phone Number : </div>
-                        <div>+91 {{details.U_Mobile}}</div>
+                        <div class="text-muted small">Phone Number :</div>
+                        <div>+91 {{det.S_Mobile}}</div>
                     </div>
                 </div>
             </div>
@@ -174,42 +252,21 @@
                 <div class="d-flex align-items-center">
                     <i class="fas fa-id-card me-3 text-primary"></i>
                     <div>
-                        <div class="text-muted small">Ration Card Number : </div>
-                        <div>{{details.Ration_Card}}</div>
+                        <div class="text-muted small">Registration Number :</div>
+                        <div>{{det.Reg_Num}}</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Department -->
-        <div class="col-md-6">
-            <div class="card p-3">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-users me-3 text-primary"></i>
-                    <div>
-                        <div class="text-muted small">Number Of Family Members : </div>
-                        <div>{{details.Family_Members}}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Join Date -->
-        <div class="col-md-6">
-            <div class="card p-3">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-calendar me-3 text-primary"></i>
-                    <div>
-                        <div class="text-muted small">Ration Card Color :</div>
-                        <div>{{details.Card_Color}}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Employee ID -->
 
     </div>
+
+    {% endif %}
 </div>
 
 <footer id="contact" class="bd-footer py-4 py-md-5 mt-5">
