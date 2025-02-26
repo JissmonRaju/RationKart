@@ -1,4 +1,7 @@
+
 from django.db import models
+import uuid
+from django.contrib.gis.db import models as geomodels
 
 # Create your models here.
 class ShopOwner(models.Model):
@@ -7,6 +10,8 @@ class ShopOwner(models.Model):
     S_Mail = models.EmailField(max_length=100)
     S_Mobile = models.CharField(max_length=20)
     S_Pass = models.CharField(max_length=100)
+    Location = geomodels.PointField(null=True, blank=True)
+
 
 
 class BeneficiaryRegister(models.Model):
@@ -17,6 +22,8 @@ class BeneficiaryRegister(models.Model):
     U_Mobile = models.CharField(max_length=20)
     U_Pass = models.CharField(max_length=100)
     Family_Members = models.IntegerField(null=True)
+    Location = geomodels.PointField(null=True, blank=True)
+    Assigned_Shop = models.ForeignKey(ShopOwner, on_delete=models.SET_NULL, null=True, blank=True)
 
 
 class ContactDB(models.Model):
@@ -34,10 +41,16 @@ class CartDB(models.Model):
     I_Total = models.IntegerField()
     Item_Image = models.ImageField(upload_to="Cart Images")
 
-
-
 class OrderDB(models.Model):
-    Ord_Name = models.CharField(max_length=100)
+    Order_Num = models.UUIDField(default=uuid.uuid4,editable=False,unique=True)
+    Name = models.CharField(max_length=100)
+    Card_Num = models.CharField(max_length=100,blank=True)
+    Reg_Num = models.CharField(max_length=100,blank=True)
+    Email = models.EmailField(max_length=100)
+    Address = models.CharField(max_length=150)
+    Mobile = models.CharField(max_length=20)
+
+
 
 
 

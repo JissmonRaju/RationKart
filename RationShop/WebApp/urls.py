@@ -29,7 +29,10 @@ urlpatterns = [
 
     path('OrderPage/',views.order_page,name='OrderPage'),
 
-    path('CheckOut/',views.checkout_page,name='CheckOut')
+    path('CheckOut/',views.checkout_page,name='CheckOut'),
+
+    path('ShopStock/',views.shop_stock,name='ShopStock'),
+    path('ShopSingle/<int:s_id>/',views.shop_single_prod,name='ShopSingle')
 
 
 

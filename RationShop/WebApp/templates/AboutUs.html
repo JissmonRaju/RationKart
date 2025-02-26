@@ -61,20 +61,29 @@
                         <div class="collapse navbar-collapse" id="navbarsExample04">
                             <ul class="navbar-nav mr-auto">
                                 <li class="nav-item">
+                                    {% if request.session.Ration_Card %}
                                     <a class="nav-link" href="{% url 'Home' %}"> Home </a>
+                                    {% elif request.session.Reg_Num %}
+                                    <a class="nav-link" href="{% url 'ShopHome' %}"> Home </a>
+                                    {% endif %}
                                 </li>
                                 <li class="nav-item ">
-                                    <a class="nav-link" href="{% url 'Products' %}">Ration</a>
+                                    {% if request.session.Ration_Card %}
+                                    <a class="nav-link" href="{% url 'Products' %}"> Ration </a>
+                                    {% elif request.session.Reg_Num %}
+                                    <a class="nav-link" href="{% url 'ShopStock' %}"> Stock </a>
+                                    {% endif %}
                                 </li>
+
 
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="">Orders</a>
+                                    <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
                                 </li>
                                 <li class="nav-item active">
-                                    <a class="nav-link" href="">About</a>
+                                    <a class="nav-link" href="{% url 'About' %}">About</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
@@ -92,6 +101,10 @@
                                         {% if details and details.id %}
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' details.id %}">My Details</a>
+                                        </button>
+                                        {% elif shp and shp.id %}
+                                        <button class="dropdown-item">
+                                            <a href="{% url 'MyDetails' shp.id %}">My Details</a>
                                         </button>
                                         {% else %}
                                         <p style="text-align: center;">Details not available</p>

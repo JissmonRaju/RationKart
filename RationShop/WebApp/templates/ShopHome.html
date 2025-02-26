@@ -201,17 +201,17 @@
                         </button>
                         <div class="collapse navbar-collapse" id="navbarsExample04">
                             <ul class="navbar-nav mr-auto">
-                                <li class="nav-item">
+                                <li class="nav-item active">
                                     <a class="nav-link" href="{% url 'ShopHome' %}"> Home </a>
                                 </li>
-                                <li class="nav-item active">
-                                    <a class="nav-link" href="{% url 'Products' %}">Stock</a>
+                                <li class="nav-item ">
+                                    <a class="nav-link" href="{% url 'ShopStock' %}">Stock</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="">Orders</a>
+                                    <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>

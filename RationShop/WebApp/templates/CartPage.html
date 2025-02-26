@@ -73,14 +73,18 @@
                                     {% endif %}
                                 </li>
                                 <li class="nav-item ">
-                                    <a class="nav-link" href="{% url 'Products' %}">Ration</a>
+                                    {% if request.session.Ration_Card %}
+                                    <a class="nav-link" href="{% url 'Products' %}"> Ration </a>
+                                    {% elif request.session.Reg_Num %}
+                                    <a class="nav-link" href="{% url 'ShopStock' %}"> Stock </a>
+                                    {% endif %}
                                 </li>
 
                                 <li class="nav-item active">
                                     <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="">Orders</a>
+                                    <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>
@@ -167,6 +171,7 @@
                                        value="{{i.Item_Quantity}}">
                             </div>
                         </div>
+                        {% if request.session.Ration_Card %}
                         <div class="col-md-2">
                             <p class="text-muted small mb-1">Price</p>
 
@@ -180,13 +185,26 @@
                                 </button>
                             </a>
                         </div>
+                        {% elif request.session.Reg_Num %}
+                        <div class="col-md-1">
+                            <a href="{% url 'DeleteCart' crt_id=i.id %}">
+                                <button class="btn btn-link text-danger" type="submit">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
-
-                    <!-- Wheat Flour -->
-
                     {% endfor %}
-
                 </div>
+                {% if request.session.Ration_Card %}
+                <div class="d-flex justify-content-between border-top pt-3 pl-3">
+                    <span class="fw-bold">Total Amount To Pay </span>
+                    <span class="fw-bold">₹ {{total_price}}</span>
+                </div>
+                {% elif request.session.Reg_Num %}
+                <div></div>
+                {% endif %}
             </div>
         </div>
 
@@ -195,9 +213,11 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title mb-4">Order Summary</h5>
+                    {% if request.session.Ration_Card %}
+
                     <div class="d-flex justify-content-between mb-3">
-                        <span>Subtotal (4 items)</span>
-                        <span>₹405.00</span>
+                        <span>Subtotal ({{item_count}} items)</span>
+                        <span>₹{{total_price}}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-4">
                         <span>Tax (5%)</span>
@@ -205,7 +225,7 @@
                     </div>
                     <div class="d-flex justify-content-between mb-4">
                         <strong>Total</strong>
-                        <strong>₹425.25</strong>
+                        <strong>₹{{total_price}}</strong>
                     </div>
                     <button class="btn btn-dark w-100">
                         <i class="fas fa-lock me-2"></i><a href="{% url 'CheckOut' %}">Proceed to Checkout</a>
@@ -213,6 +233,22 @@
                     <small class="text-muted d-block text-center mt-3">
                         Delivery schedule will be confirmed after checkout
                     </small>
+                    {% elif request.session.Reg_Num %}
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Total Number Of Items :</span>
+                        <span>{{item_count}} </span>
+                    </div>
+                     <div class="d-flex justify-content-between mb-3">
+                        <span>Total Quantity Of Items :</span>
+                        <span>{{quant}} Kg</span>
+                    </div>
+                    <button class="btn btn-dark w-100">
+                        <i class="fas fa-lock me-2"></i><a href="{% url 'CheckOut' %}">Proceed to Checkout</a>
+                    </button>
+                    <small class="text-muted d-block text-center mt-3">
+                        Delivery schedule will be confirmed after checkout
+                    </small>
+                    {% endif %}
                 </div>
             </div>
         </div>

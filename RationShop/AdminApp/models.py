@@ -22,3 +22,13 @@ class Stock(models.Model):
     Item_Price = models.IntegerField(null=True)
     Item_Image = models.ImageField(upload_to='Item Image',null=True)
 
+
+class RationItems(models.Model):
+    Ration = models.CharField(max_length=100)
+    R_Desc = models.CharField(max_length=150, null=True)
+    R_Quant = models.IntegerField()
+    R_Avail = models.CharField(max_length=50)
+    R_Price = models.IntegerField(null=True)
+    R_Image = models.ImageField(upload_to='Ration Image', null=True)
+
+
