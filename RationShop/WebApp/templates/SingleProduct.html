@@ -93,7 +93,7 @@
                                     <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="">Orders</a>
+                                    <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>
@@ -138,22 +138,22 @@
         <!-- Product Image -->
         <div class="col-lg-6 mb-4 mt-4 mb-lg-0">
             <div class="product-image-placeholder">
-                <img src="{{sing.Item_Image.url}}" style="width:400px;height:500px;margin-top:200px;">
+                <img src="{{sing.R_Image.url}}" style="width:400px;height:500px;margin-top:200px;">
             </div>
         </div>
 
         <!-- Product Details -->
         <div class="col-lg-6">
-            <h1 class="mb-3">{{sing.Item}}</h1>
+            <h1 class="mb-3">{{sing.Ration}}</h1>
 
             <!-- Rating -->
 
             <!-- Price -->
-            <h2 class="mb-4">₹{{sing.Item_Price}}/ kg</h2>
+            <h2 class="mb-4">₹{{sing.R_Price}}/ kg</h2>
 
             <!-- Description -->
             <p class="lead mb-4">
-                {{sing.Description}}
+                {{sing.R_Desc}}
             </p>
 
             <!-- Features -->
@@ -166,7 +166,7 @@
                 </ul>
             </div>
             <br>
-            <h5><b>Availabilty ? : {{sing.Availability}}</b></h5> <br>
+            <h5><b>Availabilty ? : {{sing.R_Avail}}</b></h5> <br>
 
             <form action="{% url 'Save_Cart' %}" method="post">
                 {% csrf_token %}
@@ -174,8 +174,9 @@
                     <label class="form-label">Quantity (In Kg):</label>
                     <div class="input-group" style="max-width: 150px;">
 
-                        <input type="hidden" name="iname" value="{{ sing.Item }}">
-                        <input type="hidden" id="price" name="price" value="{{ sing.Item_Price }}">
+
+                        <input type="hidden" name="iname" value="{{ sing.Ration }}">
+                        <input type="hidden" id="price" name="price" value="{{ sing.R_Price }}">
                         <input type="hidden" id="member" value="{{ prod.Family_Members }}">
 
                         <!-- Read-only quantity field -->
@@ -192,11 +193,11 @@
                         <input type="hidden" name="quant" value="{{ final_quantity }}">
 
                         <!-- Hidden total field (auto-updated via JS) -->
-                        <input type="hidden" id="total" name="total" value="{{ sing.Item_Price }}">
+                        <input type="hidden" id="total" name="total" value="{{ sing.R_Price }}">
                     </div>
                 </div>
 
-                {% if sing.Availability == 'Item Is Available' %}
+                {% if sing.R_Avail == 'Item Is Available' %}
                     {% if already_in_cart %}
                     <button class="btn btn-secondary w-100 py-3" disabled>
                         <i class="fas fa-shopping-cart me-2"></i> Already in Cart

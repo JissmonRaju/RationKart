@@ -2,9 +2,10 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.db.models import Sum
 
-from AdminApp.models import Stock
-from WebApp.models import BeneficiaryRegister, ContactDB, CartDB, ShopOwner
+from AdminApp.models import Stock, RationItems
+from WebApp.models import BeneficiaryRegister, ContactDB, CartDB, ShopOwner, OrderDB
 from AdminApp.views import index
 
 
@@ -19,7 +20,7 @@ def home(request):
 def products(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
-    prod = Stock.objects.all()
+    prod = RationItems.objects.all()
     return render(request, 'Products.html', {'prod': prod, 'details': details})
 
 
@@ -92,15 +93,21 @@ def save_login(request):
 
 
 def log_out(request):
-    del request.session['Ration_Card']
-    del request.session['U_Pass']
+    if request.session.get('Ration_Card'):
+        request.session.pop('Ration_Card', None)
+        request.session.pop('U_Pass', None)
+
+    elif request.session.get('Reg_Num'):
+        request.session.pop('Reg_Num', None)
+        request.session.pop('S_Pass', None)
+
     return redirect(login_page)
 
 
 def contact_us(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
-
-    return render(request, 'ContactUs.html', {'details': details})
+    shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    return render(request, 'ContactUs.html', {'details': details,'shp':shp})
 
 
 def save_contact(request):
@@ -115,13 +122,16 @@ def save_contact(request):
 
 
 def about_page(request):
-    return render(request, 'AboutUs.html')
+    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
+
+    shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    return render(request, 'AboutUs.html',{'details': details,'shp':shp})
 
 
 def single_product(request, si_id):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
-    sing = Stock.objects.get(id=si_id)
+    sing = RationItems.objects.get(id=si_id)
 
     # Get beneficiary details
     prod = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
@@ -133,9 +143,9 @@ def single_product(request, si_id):
 
     # For Yellow card, the allocation is fixed for the household (not per person)
     if prod and prod.Card_Color == "Yellow":
-        if sing.Item == "Rice":
+        if sing.Ration == "Rice":
             final_quantity = 28
-        elif sing.Item == "Wheat":
+        elif sing.Ration == "Wheat":
             final_quantity = 7
         else:
             final_quantity = 35
@@ -145,12 +155,12 @@ def single_product(request, si_id):
             "Blue": {"Rice": 2},
             "White": {"Rice": 8.90, "Wheat": 6.70}
         }
-        if prod and prod.Card_Color in allocations and sing.Item in allocations[prod.Card_Color]:
-            per_member_qty = allocations[prod.Card_Color][sing.Item]
+        if prod and prod.Card_Color in allocations and sing.Ration in allocations[prod.Card_Color]:
+            per_member_qty = allocations[prod.Card_Color][sing.Ration]
             final_quantity = per_member_qty * family_members
         else:
             product_defaults = {"Wheat": 3, "Boiled Rice": 5, "Matta Rice": 5, "Raw Rice": 7}
-            default_quantity = product_defaults.get(sing.Item, 1)
+            default_quantity = product_defaults.get(sing.Ration, 1)
             final_quantity = default_quantity * family_members
 
     return render(request, 'SingleProduct.html', {
@@ -170,32 +180,64 @@ def cart_page(request):
     elif shp:
         crt = CartDB.objects.filter(User_Name=request.session['Reg_Num'])
     else:
-        crt=None
-    return render(request, 'CartPage.html', {'crt': crt, 'details': details,'shp':shp})
+        crt = None
+    ord = CartDB.objects.filter(User_Name=request.session.get('Ration_Card') or request.session.get('Reg_Num'))
+    total_price = ord.aggregate(Sum('I_Total'))['I_Total__sum'] or 0
+    quant = 0
+    for i in crt:
+        quant += i.Item_Quantity
+
+    item_count = ord.count()
+
+    return render(request, 'CartPage.html', {'crt': crt, 'details': details, 'shp': shp, 'total_price': total_price,'item_count':item_count,'quant':quant})
 
 
 def save_cart(request):
-    if request.method == 'POST':
-        i_name = request.POST.get('iname')
-        usr_name = request.session.get('Ration_Card') or request.session.get('Reg_Num')
-        i_price = request.POST.get('price')
-        i_quant = request.POST.get('quant')
-        i_total = request.POST.get('total')
-        try:
-            x = Stock.objects.get(Item=i_name)
-            img = x.Item_Image
-        except Stock.DoesNotExist:
-            img = None
-        if CartDB.objects.filter(User_Name=usr_name, Item_Name=i_name).exists():
-            return redirect(products)
-        obj = CartDB(
-            User_Name=usr_name,
-            Item_Name=i_name,
-            Item_Quantity=int(i_quant),  # Ensure integer conversion
-            I_Price=int(i_price),
-            I_Total=int(i_total),
-            Item_Image=img)
-        obj.save()
+    if request.session.get('Reg_Num'):
+        if request.method == 'POST':
+            i_name = request.POST.get('rname')
+            usr_name = request.session.get('Reg_Num')
+            i_price = request.POST.get('rprice')
+            i_quant = request.POST.get('rquant')
+            i_total = request.POST.get('rtotal')
+            try:
+                x = Stock.objects.get(Item=i_name)
+                img = x.Item_Image
+            except Stock.DoesNotExist:
+                img = None
+            if CartDB.objects.filter(User_Name=usr_name, Item_Name=i_name).exists():
+                return redirect(shop_stock)
+            obj = CartDB(
+                User_Name=usr_name,
+                Item_Name=i_name,
+                Item_Quantity=int(i_quant),  # Ensure integer conversion
+                I_Price=i_price,
+                I_Total=i_total,
+                Item_Image=img)
+            obj.save()
+        return redirect(shop_stock)
+    elif request.session.get('Ration_Card'):
+        if request.method == 'POST':
+            i_name = request.POST.get('iname')
+            usr_name = request.session.get('Ration_Card')
+            i_price = request.POST.get('price')
+            i_quant = request.POST.get('quant')
+            i_total = request.POST.get('total')
+            try:
+                x = RationItems.objects.get(Ration=i_name)
+                img = x.R_Image
+            except RationItems.DoesNotExist:
+                img = None
+            if CartDB.objects.filter(User_Name=usr_name, Item_Name=i_name).exists():
+                return redirect(products)
+            obj = CartDB(
+                User_Name=usr_name,
+                Item_Name=i_name,
+                Item_Quantity=int(i_quant),  # Ensure integer conversion
+                I_Price=i_price,
+                I_Total=i_total,
+                Item_Image=img)
+            obj.save()
         return redirect(products)
 
 
@@ -217,19 +259,48 @@ def my_details(request, my_id):
 
 
 def order_page(request):
-    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
-    ord = CartDB.objects.all()
-    return render(request,'OrderPage.html',{'details': details,'ord':ord})
+    ration_card = request.session.get('Ration_Card')
+    reg_num = request.session.get('Reg_Num')
+    details = BeneficiaryRegister.objects.filter(Ration_Card=ration_card).first()
+    shp = ShopOwner.objects.filter(Reg_Num=reg_num).first()
+    ord = CartDB.objects.filter(User_Name=ration_card or reg_num)
+    total_price = ord.aggregate(Sum('I_Total'))['I_Total__sum'] or 0
+    item_count = ord.count()
+    return render(request, 'OrderPage.html', {'details': details, 'ord': ord, 'shp': shp, 'total_price': total_price,
+                                              'item_count': item_count})
 
 
 def checkout_page(request):
     shp_ownr = request.session.get('Reg_Num')
     usr_cust = request.session.get('Ration_Card')
+    ord = CartDB.objects.filter(User_Name=usr_cust or shp_ownr)
+    total_price = ord.aggregate(Sum('I_Total'))['I_Total__sum'] or 0
+    item_count = ord.count()
     if shp_ownr:
         chk = CartDB.objects.filter(User_Name=shp_ownr)
     elif usr_cust:
         chk = CartDB.objects.filter(User_Name=usr_cust)
     else:
-        chk=None
-    return render(request,'CheckOut.html',{'chk':chk})
+        chk = None
+    shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
+    return render(request, 'CheckOut.html', {'chk': chk,'details': details,'shp':shp,'total_price': total_price,
+                                              'item_count': item_count})
+
+
+def shop_stock(request):
+    details = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    stks = Stock.objects.all()
+    return render(request, 'ShopStock.html', {'details': details, 'stks': stks})
+
+
+def shop_single_prod(request, s_id):
+    details = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    singl = Stock.objects.get(id=s_id)
+    produ = Stock.objects.all()
+    return render(request, 'ShopSingleProd.html', {'singl': singl, 'produ': produ, 'details': details})
+
+
+def shop_cart(request):
+    return render(request, 'ShopCart.html')

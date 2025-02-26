@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render, redirect
 from django.utils.datastructures import MultiValueDictKeyError
-from AdminApp.models import Stock, StockCategory
+from AdminApp.models import Stock, StockCategory,RationItems
 from django.contrib.auth.models import User
 from WebApp.models import ContactDB,BeneficiaryRegister
 
@@ -161,3 +161,54 @@ def delete_message(request,m_id):
     del_msg = ContactDB.objects.filter(id=m_id)
     del_msg.delete()
     return redirect(view_message)
+
+
+
+def add_ration(request):
+    return render(request,'AddRation.html')
+
+def save_ration(request):
+    if request.method=='POST':
+        r_name = request.POST.get('rname')
+        r_desc = request.POST.get('rdesc')
+        r_quant = request.POST.get('rquant')
+        r_price = request.POST.get('rprice')
+        r_avail = request.POST.get('ravail')
+        r_image = request.FILES['rimage']
+        obj = RationItems(Ration=r_name,R_Desc=r_desc,R_Quant=r_quant,R_Avail=r_avail,R_Price=r_price,R_Image=r_image)
+        obj.save()
+        return redirect(add_ration)
+
+def display_ration(request):
+    rat = RationItems.objects.all()
+    return render(request,'Display_Ration.html',{'rat':rat})
+
+def edit_ration(request,r_id):
+    rt = RationItems.objects.get(id=r_id)
+    return render(request,'Edit_Ration.html',{'rt':rt})
+
+def update_ration(request,r_id):
+    if request.method == 'POST':
+        r_name = request.POST.get('rname')
+        r_desc = request.POST.get('rdesc')
+        r_quant = request.POST.get('rquant')
+        r_price = request.POST.get('rprice')
+        r_avail = request.POST.get('ravail')
+        try:
+            img = request.FILES['rimage']
+            fs = FileSystemStorage()
+            file = fs.save(img.name,img)
+
+        except MultiValueDictKeyError:
+            file = RationItems.objects.get(id=r_id).R_Image
+
+        RationItems.objects.filter(id=r_id).update(Ration=r_name,R_Desc=r_desc,R_Quant=r_quant,R_Avail=r_avail,R_Price=r_price,R_Image=file)
+        return redirect(display_ration)
+
+def del_ration(request,r_id):
+    delete_ration = RationItems.objects.filter(id=r_id)
+    delete_ration.delete()
+    return redirect(display_ration)
+
+
+

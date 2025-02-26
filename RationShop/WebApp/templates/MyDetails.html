@@ -81,17 +81,25 @@
                         <div class="collapse navbar-collapse" id="navbarsExample04">
                             <ul class="navbar-nav mr-auto">
                                 <li class="nav-item">
+                                    {% if request.session.Ration_Card %}
                                     <a class="nav-link" href="{% url 'Home' %}"> Home </a>
+                                    {% elif request.session.Reg_Num %}
+                                    <a class="nav-link" href="{% url 'ShopHome' %}"> Home </a>
+                                    {% endif %}
                                 </li>
                                 <li class="nav-item ">
-                                    <a class="nav-link" href="{% url 'Products' %}">Ration</a>
+                                    {% if request.session.Ration_Card %}
+                                    <a class="nav-link" href="{% url 'Products' %}"> Ration </a>
+                                    {% elif request.session.Reg_Num %}
+                                    <a class="nav-link" href="{% url 'ShopStock' %}"> Stock </a>
+                                    {% endif %}
                                 </li>
 
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="">Orders</a>
+                                    <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>
@@ -100,20 +108,38 @@
                                     <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
                                 </li>
 
-                                <li class="nav-item dropdown active">
+                                <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" role="button"
                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="bi bi-person-circle" style="font-size: 2rem;"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
                                         {% if request.session.Ration_Card %}
-                                        <h2 style="text-align:center;">Hi,{{request.session.Ration_Card}}</h2>
+                                        <h2 style="text-align:center;">Hi, {{ request.session.Ration_Card }}</h2>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
+                                        {% if details and details.id %}
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' details.id %}">My Details</a>
                                         </button>
+                                        {% else %}
+                                        <p style="text-align: center;">Details not available</p>
+                                        {% endif %}
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
+
+                                        {% elif request.session.Reg_Num %}
+                                        <h2 style="text-align:center;">Hi, {{ request.session.Reg_Num }}</h2>
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        {% if shp and shp.id %}
+                                        <button class="dropdown-item">
+                                            <a href="{% url 'MyDetails' shp.id %}">My Details</a>
+                                        </button>
+                                        {% else %}
+                                        <p style="text-align: center;">Details not available</p>
+                                        {% endif %}
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
+
                                         {% else %}
                                         <a class="dropdown-item" href="{% url 'LoginPage' %}">Login</a>
                                         {% endif %}
@@ -132,86 +158,98 @@
 
 <div class="container py-5">
     <h1 class="text-center mb-4">Personal Information</h1>
-    {% if request.session.U_Name %}
+    {% if request.session.Ration_Card %}
 
-        <div class="card p-4 mb-4">
-            <div class="d-flex align-items-center">
-                <div>
-                    <h2 class="mb-1">Name of Card Holder : <b>{{details.U_Name}}</b></h2>
+    <div class="card p-4 mb-4">
+        <div class="d-flex align-items-center">
+            <div>
+                <h2 class="mb-1">Name of Card Holder : <b>{{details.U_Name}}</b></h2>
+            </div>
+        </div>
+    </div>
+    <div class="row g-4">
+        <!-- Email -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-envelope me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Email ID :</div>
+                        <div>{{details.U_Mail}}</div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="row g-4">
-            <!-- Email -->
-            <div class="col-md-6">
-                <div class="card p-3">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-envelope me-3 text-primary"></i>
-                        <div>
-                            <div class="text-muted small">Email ID :</div>
-                            <div>{{details.U_Mail}}</div>
-                        </div>
+
+        <!-- Phone -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-phone me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Phone Number :</div>
+                        <div>+91 {{details.U_Mobile}}</div>
                     </div>
                 </div>
             </div>
-
-            <!-- Phone -->
-            <div class="col-md-6">
-                <div class="card p-3">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-phone me-3 text-primary"></i>
-                        <div>
-                            <div class="text-muted small">Phone Number :</div>
-                            <div>+91 {{details.U_Mobile}}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Location -->
-            <div class="col-md-6">
-                <div class="card p-3">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-id-card me-3 text-primary"></i>
-                        <div>
-                            <div class="text-muted small">Ration Card Number :</div>
-                            <div>{{details.Ration_Card}}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Department -->
-            <div class="col-md-6">
-                <div class="card p-3">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-users me-3 text-primary"></i>
-                        <div>
-                            <div class="text-muted small">Number Of Family Members :</div>
-                            <div>{{details.Family_Members}}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Join Date -->
-            <div class="col-md-6">
-                <div class="card p-3">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-calendar me-3 text-primary"></i>
-                        <div>
-                            <div class="text-muted small">Ration Card Color :</div>
-                            <div>{{details.Card_Color}}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Employee ID -->
-
         </div>
+
+        <!-- Location -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-id-card me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Ration Card Number :</div>
+                        <div>{{details.Ration_Card}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-users me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Number Of Family Members :</div>
+                        <div>{{details.Family_Members}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Join Date -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-calendar me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Ration Card Color :</div>
+                        <div>{{details.Card_Color}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-calendar me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Ration Shop ID :</div>
+                        <div>{{det.Reg_Num}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee ID -->
+
+    </div>
     {% elif request.session.Reg_Num %}
-        <div class="card p-4 mb-4">
+    <div class="card p-4 mb-4">
         <div class="d-flex align-items-center">
             <div>
                 <h2 class="mb-1">Name of Shop Owner : <b>{{det.S_Name}}</b></h2>
@@ -219,7 +257,7 @@
         </div>
     </div>
 
-        <div class="row g-4">
+    <div class="row g-4">
         <!-- Email -->
         <div class="col-md-6">
             <div class="card p-3">
