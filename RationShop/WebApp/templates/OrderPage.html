@@ -182,41 +182,55 @@
     </div>
 </header>
 
+<!-- OrderPage.html -->
 <div class="container py-4">
-
     <h1 class="mb-4">Your Orders</h1>
-    {% for i in ord %}
-    <!-- First Order -->
-    <div class="order-card">
-        <div class="order-header d-flex justify-content-between align-items-center">
-            <div>
-                <div class="fw-bold">#ORD-2024-001</div>
-            </div>
-            <span class="status-delivered">Delivered</span>
+
+    {% for order in orders %}
+    <div class="order-card mb-4 border rounded-3 p-3">
+        <div class="order-header d-flex justify-content-between align-items-center mb-3">
+            <div class="fw-bold">Order #{{ order.Order_Num }}</div>
+            <span class="badge bg-{% if order.status.status == 'delivered' %}success{% else %}warning{% endif %}">
+                {{ order.status.get_status_display }}
+            </span>
         </div>
-        <div class="p-3">
+
+        {% if order.cart_items.exists %}
+        {% for item in order.cart_items.all %}
+        <div class="cart-item border-bottom pb-3 mb-3">
             <div class="row align-items-center">
                 <div class="col-auto">
-                    <img src="{{i.Item_Image.url}}" alt="Premium Wireless Headphones" class="product-image">
+                    <img src="{{ item.Item_Image.url }}" alt="{{ item.Item_Name }}"
+                         class="product-image rounded-2" style="width: 80px; height: 80px; object-fit: cover">
                 </div>
                 <div class="col">
-                    <h5 class="mb-1">{{i.Item_Name}}</h5>
-                    <div class="text-muted">Quantity: {{i.Item_Quantity}} Kg</div>
+                    <h5 class="mb-1">{{ item.Item_Name }}</h5>
+                    <div class="text-muted">Quantity: {{ item.Item_Quantity }} Kg</div>
                 </div>
-                <div class="col-auto">
-                    <div class="fw-bold">₹ {{i.I_Price}} Per Kg</div>
+                <div class="col-auto text-end">
+                    <div class="fw-bold">₹ {{ item.I_Price }} / Kg</div>
+                    <div class="text-muted">Total: ₹ {{ item.I_Total }}</div>
                 </div>
             </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="alert alert-warning">No items in this order</div>
+        {% endif %}
 
+        <div class="order-total pt-3 d-flex justify-content-between align-items-center">
+            <span class="fw-bold fs-5">Order Total:</span>
+            <span class="fw-bold fs-5">₹ {{ order.total }}</span>
         </div>
     </div>
+    {% empty %}
+    <div class="alert alert-info">No orders found</div>
     {% endfor %}
-    <div class="border-top mt-3 pt-3 d-flex justify-content-between">
-        <span class="fw-bold">Total Amount</span>
-        <span class="fw-bold">{{total_price}}</span>
-    </div>
-    <!-- Second Order -->
 
+    <div class="grand-total border-top pt-4 mt-4 d-flex justify-content-between align-items-center">
+        <span class="fw-bold fs-5">Total of All Orders:</span>
+        <span class="fw-bold fs-5">₹ {{ total_price }}</span>
+    </div>
 </div>
 
 

@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.utils.datastructures import MultiValueDictKeyError
 from AdminApp.models import Stock, StockCategory,RationItems
 from django.contrib.auth.models import User
-from WebApp.models import ContactDB,BeneficiaryRegister
+from WebApp.models import ContactDB,BeneficiaryRegister,OrderDB
 
 
 # Create your views here.
@@ -211,4 +211,11 @@ def del_ration(request,r_id):
     return redirect(display_ration)
 
 
+def order_details(request):
+    ord_det = OrderDB.objects.all()
+    return render(request,'Order_Details.html',{'ord_det':ord_det})
 
+def del_orders(request,o_id):
+    del_ord = OrderDB.objects.filter(id=o_id)
+    del_ord.delete()
+    return redirect(order_details)

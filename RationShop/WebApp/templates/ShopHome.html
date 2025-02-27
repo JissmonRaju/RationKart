@@ -233,6 +233,9 @@
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' det.id %}">My Details</a>
                                         </button>
+                                        <button class="dropdown-item">
+                                            <a href="{% url 'Delivery_Partner' %}">Delivery</a>
+                                        </button>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
                                         {% else %}
