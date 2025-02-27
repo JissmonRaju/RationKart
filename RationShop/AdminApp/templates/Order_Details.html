@@ -15,73 +15,88 @@
         <div class="col-lg-12 d-flex">
             <div class="card w-100">
                 <div class="card-body p-4">
-                    <h5 class="card-title fw-semibold mb-4">Stock Details</h5>
+                    <h5 class="card-title fw-semibold mb-4">Order Details</h5>
                     <div class="table-responsive">
 
                         <table class="table table-bordered">
                             <thead class="text-dark fs-4">
                             <tr>
                                 <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Name Of Item</h6>
+                                    <h6 class="fw-semibold mb-0">Order Number</h6>
                                 </th>
                                 <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Item Description</h6>
+                                    <h6 class="fw-semibold mb-0">User Name</h6>
                                 </th>
                                 <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Total Quantity (in Kg)</h6>
+                                    <h6 class="fw-semibold mb-0">Name</h6>
                                 </th>
                                 <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Category</h6>
+                                    <h6 class="fw-semibold mb-0">Email</h6>
                                 </th>
                                 <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Availability</h6>
+                                    <h6 class="fw-semibold mb-0">Address</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Mobile</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Card Number</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Register Number</h6>
+                                </th>
+                                <th class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0">Created At</h6>
                                 </th>
 
                                 <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Item Image</h6>
-                                </th>
-                                <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Edit Details</h6>
-                                </th>
-                                <th class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0">Delete Item</h6>
+                                    <h6 class="fw-semibold mb-0">Actions</h6>
                                 </th>
 
                             </tr>
                             </thead>
                             <tbody>
-                            {% for i in stk %}
+                            {% for i in ord_det %}
                             <tr>
-                                <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{i.Item}}</h6></td>
+                                <td class="border-bottom-0"><h6 class="fw-semibold mb-0">{{i.Order_Num}}</h6></td>
                                 <td class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-1">{{i.Description}}</h6>
+                                    <h6 class="fw-semibold mb-1">{{i.User_Name}}</h6>
                                 </td>
                                 <td class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-1">{{i.Total_Quantity}}</h6>
+                                    <h6 class="fw-semibold mb-1">{{i.Name}}</h6>
                                 </td>
                                 <td class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0 fs-4">{{i.Category}}</h6>
+                                    <h6 class="fw-semibold mb-0 fs-4">{{i.Email}}</h6>
                                 </td>
                                 <td class="border-bottom-0">
                                     <div class="d-flex align-items-center gap-2">
-                                        <h6 class="fw-semibold mb-0 fs-4">{{i.Availability}}</h6>
+                                        <h6 class="fw-semibold mb-0 fs-4">{{i.Address}}</h6>
+
+                                    </div>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-1">{{i.Mobile}}</h6>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <h6 class="fw-semibold mb-0 fs-4">{{i.Card_Num}}</h6>
+                                </td>
+                                <td class="border-bottom-0">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="fw-semibold mb-0 fs-4">{{i.Reg_Num}}</h6>
+
+                                    </div>
+                                </td>
+                                 <td class="border-bottom-0">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h6 class="fw-semibold mb-0 fs-4">{{i.created_at}}</h6>
 
                                     </div>
                                 </td>
 
-                                <td class="border-bottom-0">
-                                    <img src="{{i.Item_Image.url}}" width="100px" height="100px">
-                                </td>
+
                                 <td class="border-bottom-0">
                                     <h6 class="fw-semibold mb-0 fs-4">
-                                        <a href="{% url 'Edit_Stocks' s_id=i.id %}">
-                                            <button type="button" class="btn btn-info m-1">Edit</button>
-                                        </a>
-                                    </h6>
-                                </td>
-                                <td class="border-bottom-0">
-                                    <h6 class="fw-semibold mb-0 fs-4">
-                                        <a href="{% url 'Delete_Stock' s_id=i.id %}">
+                                        <a href="{% url 'DeleteOrders' o_id=i.id %}">
                                             <button type="button" class="btn btn-danger m-1">Delete</button>
                                         </a>
                                     </h6>

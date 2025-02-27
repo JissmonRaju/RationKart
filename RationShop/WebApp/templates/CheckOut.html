@@ -187,63 +187,73 @@
 
         {% for i in chk %}
         <div class="col-md-5">
-
             <div class="summary-section">
                 <div class="d-flex mb-4">
-                    <img src="{{i.Item_Image.url}}" alt="Premium Wireless Headphones" class="product-image me-3">
+                    <img src="{{ i.Item_Image.url }}" alt="{{ i.Item_Name }}"
+                         class="product-image me-3">
                     <div class="flex-grow-1">
-                        <h5 class="mb-1">{{i.Item_Name}}</h5>
-                        <div class="text-muted mb-1">Quantity: {{i.Item_Quantity}} Kg</div>
-                        <div class="price">₹ {{i.I_Price}} per Kg</div>
+                        <h5 class="mb-1">{{ i.Item_Name }}</h5>
+                        <div class="text-muted mb-1">Quantity: {{ i.Item_Quantity }} Kg</div>
+                        {% if request.session.Ration_Card %}
+                        <div class="price">₹ {{ i.I_Price }} per Kg</div>
+                        {% elif request.session.Reg_Num %}
+                        <div></div>
+                        {% else %}
+                        <div></div>
+                        {% endif %}
                     </div>
                 </div>
 
-                <div class="border-top pt-3">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Subtotal</span>
-                        <span class="price">$299.99</span>
-                    </div>
 
-
-                </div>
             </div>
         </div>
         {% endfor %}
+        {% if request.session.Ration_Card %}
         <div class="d-flex justify-content-between border-top pt-3">
             <span class="fw-bold">Total</span>
             <span class="fw-bold">₹ {{total_price}}</span>
         </div>
+        {% elif request.session.Reg_Num %}
+        <div></div>
+        {% else %}
+        <div></div>
+        {% endif %}
 
         <div class="row g-5 mt-3">
-            <form class="row g-5">
+            <form class="row g-5" method="post" action="{% url 'Save_Checkout' %}">
+                {% csrf_token %}
                 <div class="col-md-7">
-                    <h2 class="mb-4">Delivery Details</h2>
+                    <h1 class="mb-4">Delivery Details</h1>
 
                     <div class="mb-3">
                         <label for="fullName" class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-control" id="fullName" required>
+                        <input type="text" name="name" class="form-control" id="fullName"
+                               placeholder="Enter Your Full Name" value="{{orde.User_Name}}" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
+                        <input type="email" class="form-control" id="email" name="email"
+                               placeholder="Enter Your Email ID" required>
                     </div>
 
                     <div class="mb-3">
                         <label for="address" class="form-label">Delivery Address</label>
-                        <textarea class="form-control" id="address" rows="3" name="address" required></textarea>
+                        <textarea class="form-control" id="address" rows="3" name="address"
+                                  placeholder="Enter The Delivery Address" required></textarea>
                     </div>
                     {% if request.session.Ration_Card %}
                     <div class="mb-3">
                         <label for="cardNumber" class="form-label">Ration Card Number</label>
                         <input type="text" class="form-control" id="cardNumber" name="cardnum"
-                               placeholder="   12341234123"
+                               placeholder="Egs : 12341234123"
                                required>
                     </div>
                     {% elif request.session.Reg_Num %}
                     <div class="mb-3">
                         <label for="cardNumber" class="form-label">Shop Registration Number</label>
-                        <input type="text" class="form-control" id="regNumber" name="regnum" placeholder=" 12341234123"
+                        <input type="text" class="form-control" id="regNumber" name="regnum"
+                               placeholder="Egs : 12341234123"
                                required>
                     </div>
                     {% endif %}
@@ -254,13 +264,46 @@
                                required>
                     </div>
 
-                    <button type="submit" class="btn btn-primary place-order-btn mt-3">Place Order</button>
-                </div>
-                <div class="col-md-5" style="margin-top:250px; padding-left:100px;text-align:center;">
-                    <h2 class="mb-4">Payment Options</h2>
 
-                    <button type="submit" class="btn btn-primary place-order-btn mt-3">Place Order</button>
                 </div>
+                {% if request.session.Ration_Card %}
+                <div class="col-md-5" style="margin-top:50px;padding-left:100px;text-align:left;">
+                    <h1 class="mb-4">Payment Options</h1>
+                    <div class="form-check mb-3" style="font-size:25px;">
+                        <input class="form-check-input" type="radio" name="payment_option" value="cod" id="codOption">
+                        <label class="form-check-label" for="codOption">
+                            Cash On Delivery
+                        </label>
+                    </div>
+                    <div class="form-check mb-3" style="font-size:25px;">
+                        <input class="form-check-input" type="radio" name="payment_option" value="online"
+                               id="onlineOption">
+                        <label class="form-check-label" for="onlineOption">
+                            Card Payment
+                        </label>
+                    </div>
+                    <div class="form-check mb-3" style="font-size:25px;">
+                        <input class="form-check-input" type="radio" name="payment_option" value="online"
+                               id="onineOption">
+                        <label class="form-check-label" for="onlineOption">
+                            UPI Payment
+                        </label>
+                    </div>
+                    <div class="form-check mb-3" style="font-size:25px;">
+                        <input class="form-check-input" type="radio" name="payment_option" value="online"
+                               id="onlineOpton">
+                        <label class="form-check-label" for="onlineOption">
+                            Online Banking
+                        </label>
+                    </div>
+                </div>
+
+                {% elif request.session.Reg_Num %}
+                <div></div>
+                {% else %}
+                <div></div>
+                {% endif %}
+                <button type="submit" class="btn btn-primary place-order-btn mt-3">Place Order</button>
             </form>
         </div>
         <!-- Payment Details -->

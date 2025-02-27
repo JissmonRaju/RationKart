@@ -149,7 +149,6 @@
             <!-- Rating -->
 
             <!-- Price -->
-            <h2 class="mb-4">₹{{singl.Item_Price}}/ kg</h2>
 
             <!-- Description -->
             <p class="lead mb-4">
@@ -193,15 +192,14 @@
                         <!-- Hidden total field (auto-updated via JS) -->
                     </div>
 
-                    <label class="form-label mt-2">Total Price:</label>
+
                     <div class="input-group" style="max-width: 150px;">
 
                         <!-- Read-only quantity field -->
                         <input
                                 name="rtotal"
-                                readonly
                                 id="total"
-                                type="text"
+                                type="hidden"
                                 class="form-control text-center"
                                 min="1"
                                 value="{{ singl.Item_Price }}"
@@ -336,17 +334,6 @@
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-<script>
-            $(document).ready(function(){
-                $("#quantity").change(function(){
-                x = document.getElementById("price").value;
-                y= document.getElementById("quantity").value;
-                res = x * y
-                document.getElementById("total").value=res;
-
-                })
-            })
-        </script>
 
 <script src="{% static 'web/assets/js/jquery.min.js' %}"></script>
 <script src="{% static 'web/assets/js/popper.min.js' %}"></script>

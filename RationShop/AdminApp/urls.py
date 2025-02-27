@@ -36,5 +36,8 @@ urlpatterns = [
     path('View_Ration/',views.display_ration,name='View_Ration'),
     path('Edit_Ration/<int:r_id>/',views.edit_ration,name='Edit_Ration'),
     path('Update_Ration/<int:r_id>/',views.update_ration,name='Update_Ration'),
-    path('Delete_Ration/<int:r_id>/',views.del_ration,name='Delete_Ration')
+    path('Delete_Ration/<int:r_id>/',views.del_ration,name='Delete_Ration'),
+
+    path('OrderDetails/',views.order_details,name='OrderDetails'),
+    path('DeleteOrders/<int:o_id>/',views.del_orders,name='DeleteOrders')
 ]

@@ -1,11 +1,11 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.db.models import Sum
-
+from django.db.models import Prefetch
 from AdminApp.models import Stock, RationItems
-from WebApp.models import BeneficiaryRegister, ContactDB, CartDB, ShopOwner, OrderDB
+from WebApp.models import BeneficiaryRegister, ContactDB, CartDB, ShopOwner, OrderDB, OrderStatus
 from AdminApp.views import index
 
 
@@ -107,7 +107,7 @@ def log_out(request):
 def contact_us(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
     shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
-    return render(request, 'ContactUs.html', {'details': details,'shp':shp})
+    return render(request, 'ContactUs.html', {'details': details, 'shp': shp})
 
 
 def save_contact(request):
@@ -125,7 +125,7 @@ def about_page(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
     shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
-    return render(request, 'AboutUs.html',{'details': details,'shp':shp})
+    return render(request, 'AboutUs.html', {'details': details, 'shp': shp})
 
 
 def single_product(request, si_id):
@@ -189,7 +189,9 @@ def cart_page(request):
 
     item_count = ord.count()
 
-    return render(request, 'CartPage.html', {'crt': crt, 'details': details, 'shp': shp, 'total_price': total_price,'item_count':item_count,'quant':quant})
+    return render(request, 'CartPage.html',
+                  {'crt': crt, 'details': details, 'shp': shp, 'total_price': total_price, 'item_count': item_count,
+                   'quant': quant})
 
 
 def save_cart(request):
@@ -258,35 +260,41 @@ def my_details(request, my_id):
     return render(request, 'MyDetails.html', {'details': details, 'det': det})
 
 
-def order_page(request):
-    ration_card = request.session.get('Ration_Card')
-    reg_num = request.session.get('Reg_Num')
-    details = BeneficiaryRegister.objects.filter(Ration_Card=ration_card).first()
-    shp = ShopOwner.objects.filter(Reg_Num=reg_num).first()
-    ord = CartDB.objects.filter(User_Name=ration_card or reg_num)
-    total_price = ord.aggregate(Sum('I_Total'))['I_Total__sum'] or 0
-    item_count = ord.count()
-    return render(request, 'OrderPage.html', {'details': details, 'ord': ord, 'shp': shp, 'total_price': total_price,
-                                              'item_count': item_count})
-
-
 def checkout_page(request):
+    # Identify whether the user is a shop owner or a beneficiary
     shp_ownr = request.session.get('Reg_Num')
     usr_cust = request.session.get('Ration_Card')
-    ord = CartDB.objects.filter(User_Name=usr_cust or shp_ownr)
-    total_price = ord.aggregate(Sum('I_Total'))['I_Total__sum'] or 0
-    item_count = ord.count()
+    user_identifier = usr_cust or shp_ownr  # Pick whichever session value is set
+
+    # Fetch all cart items for the current user
+    orde = CartDB.objects.filter(User_Name=user_identifier)
+
+    # Calculate the sum of I_Total for all items (if you've stored per-item totals)
+    total_price = orde.aggregate(Sum('I_Total'))['I_Total__sum'] or 0
+
+    # Build a list of items, each with its per-item subtotal (price * quantity)
+
+    item_count = orde.count()
+
+    # Determine which cart items to pass as 'chk' (your existing logic)
     if shp_ownr:
         chk = CartDB.objects.filter(User_Name=shp_ownr)
     elif usr_cust:
         chk = CartDB.objects.filter(User_Name=usr_cust)
     else:
         chk = None
-    shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
-    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
-    return render(request, 'CheckOut.html', {'chk': chk,'details': details,'shp':shp,'total_price': total_price,
-                                              'item_count': item_count})
+    # Fetch shop owner or beneficiary details for display
+    shp = ShopOwner.objects.filter(Reg_Num=shp_ownr).first()
+    details = BeneficiaryRegister.objects.filter(Ration_Card=usr_cust).first()
+
+    return render(request, 'CheckOut.html', {
+        'chk': chk,
+        'details': details,
+        'shp': shp,
+        'total_price': total_price,
+        'item_count': item_count  # Pass per-item subtotal data to the template
+    })
 
 
 def shop_stock(request):
@@ -304,3 +312,79 @@ def shop_single_prod(request, s_id):
 
 def shop_cart(request):
     return render(request, 'ShopCart.html')
+
+
+def order_page(request):
+    user_identifier = request.session.get('Ration_Card') or request.session.get('Reg_Num')
+
+    if not user_identifier:
+        return redirect('login')
+    orders = OrderDB.objects.filter(User_Name=user_identifier).prefetch_related(
+        Prefetch('cart_items', queryset=CartDB.objects.all()),
+        'status'
+    )
+
+    total_price = sum(order.total for order in orders)
+    shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
+    return render(request, 'OrderPage.html', {
+        'orders': orders,
+        'total_price': total_price,
+        'details': details,
+        'shp': shp,
+        'user': request.user  # Update with your actual user context
+    })
+
+
+def save_checkout(request):
+    if request.method == 'POST':
+        user_identifier = request.session.get('Ration_Card') or request.session.get('Reg_Num')
+
+        if not user_identifier:
+            return redirect('login')
+
+        # 1. Get the cart items intended for THIS order BEFORE creating the OrderDB record
+        cart_items_for_order = CartDB.objects.filter(User_Name=user_identifier, order__isnull=True)
+
+        # 2. Create order
+        order = OrderDB.objects.create(
+            User_Name=user_identifier,
+            Name=request.POST.get('name'),
+            Email=request.POST.get('email'),
+            Address=request.POST.get('address'),
+            Mobile=request.POST.get('mobile'),
+            Card_Num=request.POST.get('cardnum', ''),
+            Reg_Num=request.POST.get('regnum', '')
+        )
+
+        # 3. Associate ONLY the cart items we fetched in step 1 with the new order
+        for cart_item in cart_items_for_order:  # Iterate over the SPECIFIC cart items
+            cart_item.order = order  # Set the order for EACH item
+            cart_item.save()  # Save each cart item individually
+
+        # Create status entry
+        OrderStatus.objects.create(order=order, status='pending')
+
+        return redirect('OrderPage') if request.POST.get('payment_option') == 'cod' else redirect('CartPage')
+
+    return redirect('home')
+
+
+def delivery_partner(request):
+    user_identifier = request.session.get('Ration_Card') or request.session.get('Reg_Num')
+    order_n = OrderDB.objects.filter(User_Name=user_identifier)
+    shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    return render(request, 'Delivery_Partner.html', {'shp': shp, 'order_n': order_n})
+
+
+def update_status(request,order_num):
+    if request.method == 'POST':
+        new_status = request.POST.get('status')  # Get the new status from the form data
+
+        order = get_object_or_404(OrderDB, Order_Num=order_num)  # Get the OrderDB instance using Order_Num
+        order_status = order.status  # Access the related OrderStatus
+
+        order_status.status = new_status  # Update the status
+        order_status.save()  # Save the updated OrderStatus
+
+    return redirect('delivery_partner')
