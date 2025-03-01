@@ -38,4 +38,12 @@ urlpatterns = [
     path('Delivery_Partner/', views.delivery_partner, name='Delivery_Partner'),
     path('OrderStatus/<uuid:order_num>/', views.update_status, name='OrderStatus'),
 
+    path('OrderDetails/<uuid:order_num>/',views.order_details,name='OrderDetails'),
+
+    path('DeliverySignUp/', views.signup_delivery, name='Delivery_SignUp'),
+    path('SaveDelivery_SignUp/',views.save_delivery_signup,name='SaveDelivery_SignUp'),
+
+    path('PaymentPage/',views.payment_page,name='PaymentPage'),
+    path('CancelPayment/',views.cancel_payment,name='CancelPayment')
+
 ]

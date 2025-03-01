@@ -1,24 +1,33 @@
 from django.db import models
 import uuid
 from django.db.models import Sum
+from django.contrib.auth.models import User
+from AdminApp.models import Stock, RationItems
 
 
-# Create your models here.
 class ShopOwner(models.Model):
+    user = models.OneToOneField(
+        User, null=True,
+        on_delete=models.CASCADE,
+        related_name='shopowner_profile'
+    )
     S_Name = models.CharField(max_length=100)
     Reg_Num = models.CharField(max_length=100, unique=True)
     S_Mail = models.EmailField(max_length=100)
     S_Mobile = models.CharField(max_length=20)
-    S_Pass = models.CharField(max_length=100)
 
 
 class BeneficiaryRegister(models.Model):
+    user = models.OneToOneField(
+        User, null=True,
+        on_delete=models.CASCADE,
+        related_name='beneficiary_profile'
+    )
     U_Name = models.CharField(max_length=100)
     Ration_Card = models.CharField(max_length=100, unique=True)
     Card_Color = models.CharField(max_length=50, null=True)
     U_Mail = models.EmailField(max_length=100)
     U_Mobile = models.CharField(max_length=20)
-    U_Pass = models.CharField(max_length=100)
     Family_Members = models.IntegerField(null=True)
 
 
@@ -31,33 +40,55 @@ class ContactDB(models.Model):
 
 class CartDB(models.Model):
     order = models.ForeignKey(
-        'OrderDB',
-        on_delete=models.CASCADE,
+        'WebApp.OrderDB',  # Keep the app name if OrderDB is in WebApp
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name='cart_items'
     )
     User_Name = models.CharField(max_length=100)
-    Item_Name = models.CharField(max_length=100)
+
+    # Corrected ForeignKey to RationItems in AdminApp
+    ration_item = models.ForeignKey(
+        'AdminApp.RationItems',  # Specify 'AdminApp.RationItems' to reference model in AdminApp
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='cart_items'
+    )
+
+    # Corrected ForeignKey to Stock in AdminApp
+    stock_item = models.ForeignKey(
+        'AdminApp.Stock',  # Specify 'AdminApp.Stock' to reference model in AdminApp
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='cart_items'
+    )
+
+    Item_Name = models.CharField(max_length=100)  # You might not need this anymore if linked to RationItems/Stock
     Item_Quantity = models.IntegerField(null=True)
     I_Price = models.IntegerField()
     I_Total = models.IntegerField()
-    Item_Image = models.ImageField(upload_to="Cart Images")
+    Item_Image = models.ImageField(
+        upload_to="Cart Images")  # You might not need this if images are in RationItems/Stock
 
     class Meta:
         verbose_name = "Cart Item"
 
 
-class OrderDB(models.Model):
+class OrderDB(models.Model):  # Modified OrderDB model
     Order_Num = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    User_Name = models.CharField(max_length=100,null=True)
+    Shop = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name='orders',
+                             null=True)
+    User_Name = models.CharField(max_length=100, null=True)
     Name = models.CharField(max_length=100)
     Email = models.EmailField()
     Address = models.CharField(max_length=150)
     Mobile = models.CharField(max_length=20)
-    Card_Num = models.CharField(max_length=100,null=True)
-    Reg_Num = models.CharField(max_length=100,null=True)
-    created_at = models.DateTimeField(auto_now_add=True,blank=True,null=True)
+    Card_Num = models.CharField(max_length=100, null=True)
+    Reg_Num = models.CharField(max_length=100, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -86,3 +117,17 @@ class OrderStatus(models.Model):
 
     class Meta:
         verbose_name_plural = "Order Statuses"
+
+
+class Delivery(models.Model):
+    D_Partner = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='delivery_profile'
+    )
+    D_Shop = models.ForeignKey(
+        ShopOwner,
+        on_delete=models.CASCADE,
+        related_name='delivery_partners'
+    )
+    D_Phone = models.CharField(max_length=20)

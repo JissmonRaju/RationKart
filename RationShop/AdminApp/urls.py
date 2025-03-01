@@ -39,5 +39,6 @@ urlpatterns = [
     path('Delete_Ration/<int:r_id>/',views.del_ration,name='Delete_Ration'),
 
     path('OrderDetails/',views.order_details,name='OrderDetails'),
-    path('DeleteOrders/<int:o_id>/',views.del_orders,name='DeleteOrders')
+    path('DeleteOrders/<int:o_id>/',views.del_orders,name='DeleteOrders'),
+
 ]

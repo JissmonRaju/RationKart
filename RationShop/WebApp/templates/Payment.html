@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Page</title>
+</head>
+<body>
+
+<div style="text-align:center; margin-top:200px; margin-left:150px;">
+    <h1>Proceed To Payment</h1>
+    <h2>{{ nm.Name }}</h2>
+
+    <img src="{% static 'web/assets/Image_Pay/paysymbol.png' %}" alt="" width="200" height="150"
+         style="margin-left:10px;"><br><br>
+
+    <!-- Payment Button -->
+    <button onclick="startPayment()"
+            style="background-color:LawnGreen; border-radius:10px; height:50px; width:150px;">
+        Make Payment
+    </button>
+
+    <!-- Cancel Payment Form -->
+    <form method="post" action="{% url 'CancelPayment' %}" onsubmit="return confirmCancel()" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit"
+                style="margin-left:50px; background-color:red; border-radius:10px; height:50px; width:150px;">
+            Cancel Payment
+        </button>
+    </form>
+</div>
+
+<style>
+    body {
+        background-image: url('{% static 'web/assets/Image_Pay/payimage.avif' %}');
+        background-size: cover;
+        background-position: center;
+    }
+</style>
+
+<!-- Razorpay Script (Manual Trigger) -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    function startPayment() {
+        var options = {
+            "key": "rzp_test_qtgRvY4PWS4ZIy",
+            "amount": "{{ pay_str }}",
+            "currency": "INR",
+            "order_id": "{{ payment.order_id }}",
+            "name": "E-Mart",
+            "description": "Your description",
+            "image": "",
+            "prefill": {
+                "name": "abc",
+                "email": "abc@gmail.com"
+            },
+            "theme": {
+                "color": "#4badeb"
+            },
+            "handler": function (response) {
+                alert("Payment Successful! Transaction ID: " + response.razorpay_payment_id);
+            },
+            "modal": {
+                "ondismiss": function () {
+                    alert("Payment was cancelled.");
+                }
+            }
+        };
+
+        var rzp = new Razorpay(options);
+        rzp.open();
+    }
+
+    function confirmCancel() {
+        return confirm("Are you sure you want to cancel the payment?");
+    }
+</script>
+
+</body>
+</html>

@@ -117,7 +117,9 @@
 
 
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
+                                    <a class="nav-link" href="{% url 'CartPage' %}" style="position:relative;">Cart
+                                    <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
+                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
@@ -228,7 +230,7 @@
                     <div class="mb-3">
                         <label for="fullName" class="form-label">Full Name</label>
                         <input type="text" name="name" class="form-control" id="fullName"
-                               placeholder="Enter Your Full Name" value="{{orde.User_Name}}" required>
+                               placeholder="Enter Your Full Name" value="" required>
                     </div>
 
                     <div class="mb-3">
@@ -269,7 +271,7 @@
                 {% if request.session.Ration_Card %}
                 <div class="col-md-5" style="margin-top:50px;padding-left:100px;text-align:left;">
                     <h1 class="mb-4">Payment Options</h1>
-                    <div class="form-check mb-3" style="font-size:25px;">
+                    <div class="form-check mb-3" style="font-size:25px;" >
                         <input class="form-check-input" type="radio" name="payment_option" value="cod" id="codOption">
                         <label class="form-check-label" for="codOption">
                             Cash On Delivery
