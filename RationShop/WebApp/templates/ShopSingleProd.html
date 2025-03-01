@@ -90,7 +90,9 @@
                                 </li>
 
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
+                                    <a class="nav-link" href="{% url 'CartPage' %}" style="position:relative;">Cart
+                                    <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
+                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>

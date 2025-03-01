@@ -219,3 +219,5 @@ def del_orders(request,o_id):
     del_ord = OrderDB.objects.filter(id=o_id)
     del_ord.delete()
     return redirect(order_details)
+
+

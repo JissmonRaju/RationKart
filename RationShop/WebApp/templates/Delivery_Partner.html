@@ -141,6 +141,9 @@
                         </button>
                         <div class="collapse navbar-collapse" id="navbarsExample04">
                             <ul class="navbar-nav mr-auto">
+                                <li class="nav-item active">
+                                    <a class="nav-link" href="{% url 'Delivery_Partner' %}">Delivery Home</a>
+                                </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>
                                 </li>
@@ -161,6 +164,12 @@
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' shp.id %}">My Details</a>
                                         </button>
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
+                                        {% elif request.session.delivery_partner %}
+                                        <h2 style="text-align:center;">Hi,{{request.session.delivery_partner}}</h2>
+
+
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
                                         {% else %}
@@ -185,14 +194,12 @@
                 <h2 class="mb-1">Delivery Dashboard</h2>
                 <p class="text-muted mb-0">Manage your deliveries and track orders</p>
             </div>
-            <div class="active-deliveries">
-                <i class="bi bi-box-seam me-2"></i> Active Deliveries: 2
-            </div>
+
         </div>
     </div>
 </div>
 
-<div class="container py-4">
+<div class="container py-5">
     <div class="card">
         <div class="card-header">
             <div class="d-flex align-items-center">
@@ -200,17 +207,16 @@
                 <h5 class="mb-0">Order Details</h5>
             </div>
         </div>
-        <div class="card-body p-0">
+        <div class="card-body p-3">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover mb-2">
                     <thead>
                     <tr>
                         <th scope="col" width="10%">Order ID</th>
                         <th scope="col" width="25%">Customer Details</th>
-                        <th scope="col" width="25%">Items</th>
-                        <th scope="col" width="15%">Expected Delivery</th>
-                        <th scope="col" width="12%">Status</th>
-                        <th scope="col" width="13%">Actions</th>
+                        <th scope="col" width="12%">Status Update</th>
+                        <th scope="col" width="25%">Order Details</th>
+
                     </tr>
                     </thead>
                     <tbody>
@@ -224,29 +230,8 @@
                                 <span class="phone-text"><i class="bi bi-telephone me-1"></i> {{i.Mobile}}</span>
                             </div>
                         </td>
-
                         <td>
-                            <ul class="mb-0 ps-3">
-                                {% for j in i.cart_items.all %}
-                                <li>{{j.Item_Name}}</li>
-                                {% endfor %}
-                            </ul>
-                            <--- Moved {% endfor %} after
-                        </td>
-
-                        <td>
-                            <div class="delivery-time">
-                                <i class="bi bi-clock me-1"></i> Today, 2:00 PM
-                            </div>
-                        </td>
-                        <td>
-                            <span class="status-badge status-pending">
-                                <i class="bi bi-hourglass-split me-1"></i> Pending
-                            </span>
-                        </td>
-
-                        <td>
-                            <form method="post" action="{% url 'update_order_status' i.Order_Num %}">
+                            <form method="post" action="{% url 'OrderStatus' i.Order_Num %}">
                                 {% csrf_token %}
                                 <div class="dropdown">
                                     <button class="btn btn-outline-secondary dropdown-toggle" type="button"
@@ -260,8 +245,8 @@
                                         <li>
                                             <button class="dropdown-item" type="submit" name="status"
                                                     value="{{ choice_value }}">
-                                                {% if choice_value == 'pending' %}<i class="bi bi-hourglass me-2"></i>{%
-                                                endif %}
+                                                {% if choice_value == 'pending' %}<i class="bi bi-hourglass me-2"></i>
+                                                {% endif %}
                                                 {% if choice_value == 'out_for_delivery' %}<i
                                                     class="bi bi-truck me-2"></i>{% endif %}
                                                 {% if choice_value == 'delivered' %}<i
@@ -275,6 +260,14 @@
                                 </div>
                             </form>
                         </td>
+                        <td>
+                            <button class="btn btn-outline-secondary" type="button">
+                                <a href=" {% url 'OrderDetails' order_num=i.Order_Num %}">Details
+
+                                </a>
+                            </button>
+                        </td>
+
                     </tr>
                     {% endfor %}
                     </tbody>

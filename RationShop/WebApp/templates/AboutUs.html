@@ -72,22 +72,34 @@
                                     <a class="nav-link" href="{% url 'Products' %}"> Ration </a>
                                     {% elif request.session.Reg_Num %}
                                     <a class="nav-link" href="{% url 'ShopStock' %}"> Stock </a>
+                                    {% elif request.session.delivery_partner %}
+                                    <a class="nav-link" href="{% url 'Delivery_Partner' %}">Delivery Home</a>
                                     {% endif %}
                                 </li>
-
-
+                                {% if request.session.Ration_Card or request.session.Reg_Num %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
+                                    <a class="nav-link" href="{% url 'CartPage' %}" style="position:relative;">Cart
+                                    <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
+                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
                                 </li>
-                                <li class="nav-item active">
+                                <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>
                                 </li>
-                                <li class="nav-item">
+                                <li class="nav-item active">
                                     <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
                                 </li>
+                                {% elif request.session.delivery_partner %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'About' %}">About</a>
+                                </li>
+                                <li class="nav-item active">
+                                    <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
+                                </li>
+                                {% endif %}
+
 
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" role="button"
