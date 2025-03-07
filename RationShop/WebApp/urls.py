@@ -38,17 +38,18 @@ urlpatterns = [
     path('Delivery_Partner/', views.delivery_partner, name='Delivery_Partner'),
     path('OrderStatus/<uuid:order_num>/', views.update_status, name='OrderStatus'),
 
-    path('OrderDetails/<uuid:order_num>/',views.order_details,name='OrderDetails'),
+    path('OrderDetails/<uuid:order_num>/', views.order_details, name='OrderDetails'),
 
     path('DeliverySignUp/', views.signup_delivery, name='Delivery_SignUp'),
-    path('SaveDelivery_SignUp/',views.save_delivery_signup,name='SaveDelivery_SignUp'),
+    path('SaveDelivery_SignUp/', views.save_delivery_signup, name='SaveDelivery_SignUp'),
 
-    path('PaymentPage/',views.payment_page,name='PaymentPage'),
-    path('CancelPayment/',views.cancel_payment,name='CancelPayment'),
+    path('PaymentPage/', views.payment_page, name='PaymentPage'),
+    path('CancelPayment/', views.cancel_payment, name='CancelPayment'),
 
-    path('Requests/',views.request_page,name='Requests'),
-    path('Dashboard/',views.dashboard,name='Dashboard'),
-    path('ApproveRequests/',views.approve_request,name='ApproveRequests'),
-    path('PartnerDetails/',views.partner_details,name='PartnerDetails')
+    path('Requests/', views.request_page, name='Requests'),
+    path('Dashboard/', views.dashboard, name='Dashboard'),
+    path('ApproveRequests/', views.approve_request, name='ApproveRequests'),
+    path('PartnerDetails/', views.partner_details, name='PartnerDetails'),
+    path('PendingRequests/', views.pending_requests, name='PendingRequests'),
 
 ]
