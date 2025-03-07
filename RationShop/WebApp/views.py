@@ -21,7 +21,7 @@ def home(request):
     x = cart_count.count()
     stks = Stock.objects.all()
     dev = Delivery.objects.all()
-    return render(request, 'Home.html', {'stks': stks, 'details': details, 'x': x,'dev':dev})
+    return render(request, 'Home.html', {'stks': stks, 'details': details, 'x': x, 'dev': dev})
 
 
 def products(request):
@@ -557,8 +557,6 @@ def save_checkout(request):
             return redirect('login')
         usr_name = request.session.get('Reg_Num') or request.session.get('Ration_Card')
         cart_items_for_order = CartDB.objects.filter(User_Name=user_identifier, order__isnull=True)
-        cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
-        x = cart_count.count()
 
         if not cart_items_for_order.exists():
             print("DEBUG: Cart is EMPTY. Redirecting to CartPage.")
@@ -597,30 +595,28 @@ def save_checkout(request):
         else:
             print(f"DEBUG: save_checkout - Cart was already empty for user {user_identifier}.")
 
-        if request.session.get('Ration_Card') is not None and x != 0:
-            return redirect(products)
         # Corrected conditional check using .get() with a default of None
-        elif request.session.get('Ration_Card') is not None and x != 0:  # Use .get() to avoid KeyError
-            print("DEBUG: Beneficiary checkout - Redirecting...")
-            if request.POST.get('payment_option') == 'cod':
-                return redirect(home)
-            elif request.POST.get('payment_option') == 'online':
-                return redirect(payment_page)
-            elif request.POST.get('payment_option') == 'upi':
-                return redirect(payment_page)
-            elif request.POST.get('payment_option') == 'card':
-                return redirect(payment_page)
-            else:
-                return redirect(home)
-
-        elif request.session.get('Reg_Num') is not None:  # Use .get() for Reg_Num too
-            print("DEBUG: Shop Owner checkout - Redirecting to shop home...")  # Debug for shop owner path
-            shop_home_url = 'ShopHome'  # Replace 'ShopHome' with actual shop home URL
-            return redirect(shop_home_url)
+    if request.session.get('Ration_Card') is not None:  # Use .get() to avoid KeyError
+        print("DEBUG: Beneficiary checkout - Redirecting...")
+        if request.POST.get('payment_option') == 'cod':
+            return redirect(home)
+        elif request.POST.get('payment_option') == 'online':
+            return redirect(payment_page)
+        elif request.POST.get('payment_option') == 'upi':
+            return redirect(payment_page)
+        elif request.POST.get('payment_option') == 'card':
+            return redirect(payment_page)
         else:
-            print(
-                "DEBUG: No user type identified in session during checkout. This should not happen under normal circumstances. Redirecting to Home.")  # Critical error debug
-            return redirect('Home')  # Fallback redirect - consider redirecting to login page instead
+            return redirect(home)
+
+    elif request.session.get('Reg_Num') is not None:  # Use .get() for Reg_Num too
+        print("DEBUG: Shop Owner checkout - Redirecting to shop home...")  # Debug for shop owner path
+        shop_home_url = 'ShopHome'  # Replace 'ShopHome' with actual shop home URL
+        return redirect(shop_home_url)
+    else:
+        print(
+            "DEBUG: No user type identified in session during checkout. This should not happen under normal circumstances. Redirecting to Home.")  # Critical error debug
+        return redirect('Home')  # Fallback redirect - consider redirecting to login page instead
 
     print("DEBUG: Request method is NOT POST. Redirecting to Home.")
     return redirect('Home')
@@ -759,4 +755,4 @@ def order_details(request, order_num):
 
 def partner_details(request):
     dev = Delivery.objects.all()
-    return render(request,'DeliveryPartnerDetails.html',{'dev':dev})
+    return render(request, 'DeliveryPartnerDetails.html', {'dev': dev})
