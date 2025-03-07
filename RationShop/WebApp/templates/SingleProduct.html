@@ -89,10 +89,10 @@
                                     <a class="nav-link" href="{% url 'Products' %}">Ration</a>
                                 </li>
 
-                               <li class="nav-item">
+                                <li class="nav-item">
                                     <a class="nav-link" href="{% url 'CartPage' %}" style="position:relative;">Cart
-                                    <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
-                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
+                                        <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
+                                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
@@ -188,7 +188,7 @@
                                 id="quantity"
                                 type="number"
                                 class="form-control text-center"
-                                min="1"
+
                                 value="{{ final_quantity }}"
                         >
                     </div>
@@ -210,8 +210,11 @@
                                value="{{ sing.R_Price }}">
                     </div>
                 </div>
-
-                {% if sing.R_Avail == 'Item Is Available' %}
+                {% if final_quantity == 0 %}
+                <button class="btn btn-danger w-100 py-3" disabled>
+                    <i class="fas fa-shopping-cart me-2"></i> Not Eligible for the Item
+                </button>
+                {% elif sing.R_Avail == 'Item Is Available' %}
                 {% if already_in_cart %}
                 <button class="btn btn-secondary w-100 py-3" disabled>
                     <i class="fas fa-shopping-cart me-2"></i> Already in Cart
@@ -226,6 +229,8 @@
                     Item Not Available
                 </button>
                 {% endif %}
+
+
             </form>
 
 

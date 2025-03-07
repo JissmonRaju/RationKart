@@ -44,6 +44,11 @@ urlpatterns = [
     path('SaveDelivery_SignUp/',views.save_delivery_signup,name='SaveDelivery_SignUp'),
 
     path('PaymentPage/',views.payment_page,name='PaymentPage'),
-    path('CancelPayment/',views.cancel_payment,name='CancelPayment')
+    path('CancelPayment/',views.cancel_payment,name='CancelPayment'),
+
+    path('Requests/',views.request_page,name='Requests'),
+    path('Dashboard/',views.dashboard,name='Dashboard'),
+    path('ApproveRequests/',views.approve_request,name='ApproveRequests'),
+    path('PartnerDetails/',views.partner_details,name='PartnerDetails')
 
 ]

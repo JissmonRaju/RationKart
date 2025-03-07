@@ -164,6 +164,11 @@
                                     <a class="nav-link" href="{% url 'ShopHome' %}"> Home </a>
                                     {% endif %}
                                 </li>
+                                {% if request.session.Reg_Num %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'Requests' %}"> Orders </a>
+                                </li>
+                                {% endif %}
                                 <li class="nav-item ">
                                     {% if request.session.Ration_Card %}
                                     <a class="nav-link" href="{% url 'Products' %}"> Ration </a>
@@ -171,13 +176,14 @@
                                     <a class="nav-link" href="{% url 'ShopStock' %}"> Stock </a>
                                     {% endif %}
                                 </li>
+
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'CartPage' %}" style="position:relative;">Cart
-                                    <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
-                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
+                                        <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
+                                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
                                 </li>
                                 <li class="nav-item active">
-                                    <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
+                                    <a class="nav-link" href="{% url 'OrderPage' %}">Request</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>
@@ -209,6 +215,9 @@
                                         {% if shp and shp.id %}
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' shp.id %}">My Details</a>
+                                        </button>
+                                        <button class="dropdown-item">
+                                            <a href="{% url 'PartnerDetails'%}">View Partner Details</a>
                                         </button>
                                         {% else %}
                                         <p style="text-align: center;">Details not available</p>
@@ -243,7 +252,7 @@
             </div>
             <div class="delivered-badge">
                 <i class="bi bi-clock-fill"></i> {% if order.status %}
-                {{ order.status.get_status_display }} {% else %} Pending {% endif %} {# Display Order Status #}
+                {{ order.status.get_status_display }} {% else %} Pending {% endif %}
             </div>
         </div>
 
@@ -254,6 +263,7 @@
                     <p class="mb-1 fw-bold">Name : {{ order.Name }}</p>
                     <p class="mb-1">Email : {{ order.Email }}</p>
                     <p class="mb-0">Mobile : {{ order.Mobile }}</p>
+                    <p class="mb-0">Shop ID : {{ order.Shop_ID }}</p>
                 </div>
             </div>
 
@@ -306,7 +316,7 @@
                 </div>
             </div>
         </div>
-{% elif request.session.Reg_Num %}
+        {% elif request.session.Reg_Num %}
         <div></div>
         {% endif %}
 

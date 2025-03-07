@@ -67,6 +67,11 @@
                                     <a class="nav-link" href="{% url 'ShopHome' %}"> Home </a>
                                     {% endif %}
                                 </li>
+                                {% if request.session.Reg_Num %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'Requests' %}"> Request </a>
+                                </li>
+                                {% endif %}
                                 <li class="nav-item ">
                                     {% if request.session.Ration_Card %}
                                     <a class="nav-link" href="{% url 'Products' %}"> Ration </a>
@@ -79,23 +84,32 @@
                                 {% if request.session.Ration_Card or request.session.Reg_Num %}
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'CartPage' %}" style="position:relative;">Cart
-                                    <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
-                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
+                                        <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
+                                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
                                 </li>
+
+                                {% if request.session.Reg_Num %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'OrderPage' %}">Request</a>
+                                </li>
+                                {% elif request.session.Ration_Card %}
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
                                 </li>
+                                {% else %}
+                                <li></li>
+                                {% endif %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'About' %}">About</a>
+                                    <a class="nav-link active" href="{% url 'About' %}">About</a>
                                 </li>
-                                <li class="nav-item active">
+                                <li class="nav-item ">
                                     <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
                                 </li>
                                 {% elif request.session.delivery_partner %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'About' %}">About</a>
+                                    <a class="nav-link active" href="{% url 'About' %}">About</a>
                                 </li>
-                                <li class="nav-item active">
+                                <li class="nav-item ">
                                     <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
                                 </li>
                                 {% endif %}
@@ -123,13 +137,21 @@
                                         {% endif %}
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
+                                        {% elif request.session.delivery_partner %}
+                                        <h2 style="text-align:center;">Hi,{{request.session.delivery_partner}}</h2>
 
+
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
                                         {% elif request.session.Reg_Num %}
                                         <h2 style="text-align:center;">Hi, {{ request.session.Reg_Num }}</h2>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         {% if shp and shp.id %}
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' shp.id %}">My Details</a>
+                                        </button>
+                                        <button class="dropdown-item">
+                                            <a href="{% url 'PartnerDetails'%}">View Partner Details</a>
                                         </button>
                                         {% else %}
                                         <p style="text-align: center;">Details not available</p>
@@ -168,7 +190,6 @@
                     <p>t is a long established fact that a reader will be distracted by the readable content of a page
                         when looking at its layout. The point of using Lorem Ipsum t is a long established fact that a
                         reader will be distracted by the readable content of a page when looking at </p>
-                    <a class="read_more" href="#">About More</a>
                 </div>
             </div>
         </div>

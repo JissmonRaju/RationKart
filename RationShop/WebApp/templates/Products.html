@@ -31,6 +31,134 @@
     <link rel="stylesheet" href="{% static 'web/assets/css/jquery.mCustomScrollbar.min.css' %}">
     <!-- Tweaks for older IEs-->
     <!--[if lt IE 9]>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .product-card {
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+            background-color: white;
+            border: none;
+            height: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-img-container {
+            height: 250px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .product-card:hover .product-img {
+            transform: scale(1.05);
+        }
+
+        .badge-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .badge-sale {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .badge-professional {
+            background-color: #198754;
+            color: white;
+        }
+
+        .badge-eco {
+            background-color: #20c997;
+            color: white;
+        }
+
+        .category-badge {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 5px 12px;
+            border-radius: 25px;
+            background-color: #f0f0f0;
+            color: #555;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .product-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #212529;
+        }
+
+        .product-rating {
+            color: #ffc107;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .rating-count {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-left: 5px;
+        }
+
+        .product-price {
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+            color: #212529;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            background-color: #051c2c;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            color: white;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            margin-top: auto;
+        }
+
+        .add-to-cart-btn:hover {
+            background-color: #0a2e44;
+        }
+
+        .product-info {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            height: calc(100% - 250px);
+        }
+    </style>
+
+
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
 </head>
@@ -75,8 +203,8 @@
 
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'CartPage' %}" style="position:relative;">Cart
-                                    <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
-                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
+                                        <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
+                                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
@@ -122,35 +250,35 @@
 <!-- end header inner -->
 <!-- end header -->
 <!-- Our Juices -->
-<div class="juices ">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="titlepage">
-                    <h2> Your Assigned Rations</h2>
-                    <p>Here Is A List Of Items That Are Assigned To You This Month</p>
-                </div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="titlepage">
+                <h2> Your Assigned Rations</h2>
+                <p>Here Is A List Of Items That Are Assigned To You This Month</p>
             </div>
-        </div>
-        <div class="row">
-            {% for i in prod %}
-            <div class="col-md-3 ">
-                <div class="our_main_box">
-                    <div class="our_img">
-                        <figure><img src="{{i.R_Image.url}}" alt="#"/></figure>
-                    </div>
-                    <div class="our_text">
-                        <h4>₹<strong class="yellow">{{i.R_Price}}</strong></h4>
-                        <h3>{{i.Ration}}</h3><br>
-                        <button class="btn btn-info"><a href="{% url 'SingleProduct' si_id=i.id %}">More Details</a>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
         </div>
     </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-2">
+        {% for i in prod %}
+        <div class="col">
+            <div class="card shadow-sm" style="max-width: 200px; margin: auto;">
+                <img src="{{ i.R_Image.url }}" class="card-img-top"
+                     style="height: 100px; width: auto; object-fit: contain;" alt="{{ i.Ration }}">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ i.Ration }}</h5>
+                    <p class="card-text text-primary">₹<strong>{{ i.R_Price }}</strong></p>
+                    <a href="{% url 'SingleProduct' si_id=i.id %}" class="btn btn-info btn-sm">More Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
 </div>
+
+
 <!-- end Our Juices  section -->
 <!--  footer -->
 <footer id="contact" class="bd-footer py-4 py-md-5 mt-5">
