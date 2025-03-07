@@ -87,6 +87,11 @@
                                     <a class="nav-link" href="{% url 'ShopHome' %}"> Home </a>
                                     {% endif %}
                                 </li>
+                                {% if request.session.Reg_Num %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'Requests' %}"> Orders </a>
+                                </li>
+                                {% endif %}
                                 <li class="nav-item ">
                                     {% if request.session.Ration_Card %}
                                     <a class="nav-link" href="{% url 'Products' %}"> Ration </a>
@@ -95,13 +100,13 @@
                                     {% endif %}
                                 </li>
 
-                              <li class="nav-item">
+                                <li class="nav-item">
                                     <a class="nav-link" href="{% url 'CartPage' %}" style="position:relative;">Cart
-                                    <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
-                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
+                                        <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
+                                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
+                                    <a class="nav-link" href="{% url 'OrderPage' %}">Request</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>
@@ -135,6 +140,9 @@
                                         {% if shp and shp.id %}
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' shp.id %}">My Details</a>
+                                        </button>
+                                        <button class="dropdown-item">
+                                            <a href="{% url 'PartnerDetails'%}">View Partner Details</a>
                                         </button>
                                         {% else %}
                                         <p style="text-align: center;">Details not available</p>
@@ -235,7 +243,18 @@
             </div>
         </div>
 
-        
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-calendar me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Ration Shop Registration Number :</div>
+                        <div>{{details.Shop_ID}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Employee ID -->
 
@@ -289,12 +308,84 @@
             </div>
         </div>
 
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-envelope me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">State:</div>
+                        <div>{{det.State}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phone -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-phone me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">District :</div>
+                        <div>{{det.District}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location -->
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-id-card me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Taluk :</div>
+                        <div>{{det.Taluk}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-id-card me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Panchayath :</div>
+                        <div>{{det.Panchayat}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-id-card me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Place :</div>
+                        <div>{{det.Place}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Department -->
 
 
         <!-- Employee ID -->
 
     </div>
+
+    <div class="row mt-5 d-flex justify-content-end">
+        <div class="col-auto">
+            <a href="{% url 'ApproveRequests' %}">
+                <button class="btn btn-primary">Approve Requests</button>
+
+            </a>
+        </div>
+    </div>
+
 
     {% endif %}
 </div>

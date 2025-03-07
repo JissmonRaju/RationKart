@@ -215,7 +215,7 @@
     <div class="header">
         <div class="container">
             <div class="row">
-                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col logo_section">
+                <div class="col-md-3 col-sm-3 col logo_section">
                     <div class="full">
                         <div class="center-desk">
                             <div class="logo">
@@ -226,7 +226,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-9 col-lg-10 col-md-12 col-sm-9">
+                <div class="col-xl-9 col-lg-10 col-md-10 col-sm-9">
                     <nav class="navigation navbar navbar-expand-md navbar-dark ">
                         <button class="navbar-toggler" type="button" data-toggle="collapse"
                                 data-target="#navbarsExample04" aria-controls="navbarsExample04" aria-expanded="false"
@@ -235,18 +235,21 @@
                         </button>
                         <div class="collapse navbar-collapse" id="navbarsExample04">
                             <ul class="navbar-nav mr-auto">
+                                {% if request.session.Reg_Num %}
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'Home' %}"> Home </a>
+                                    <a class="nav-link" href="{% url 'ShopHome' %}"> Home </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'Requests' %}"> Orders </a>
                                 </li>
                                 <li class="nav-item active">
-                                    <a class="nav-link" href="{% url 'Products' %}">Ration</a>
+                                    <a class="nav-link" href="{% url 'ShopStock' %}">Stocks</a>
                                 </li>
-
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'OrderPage' %}">Orders</a>
+                                    <a class="nav-link" href="{% url 'OrderPage' %}">Requests</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>
@@ -254,6 +257,24 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
                                 </li>
+                                {% elif request.session.delivery_partner %}
+                                <li class="nav-item active">
+                                    <a class="nav-link" href="{% url 'Delivery_Partner' %}">Delivery Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'About' %}">About</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
+                                </li>
+                                {% else %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'About' %}">About</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
+                                </li>
+                                {% endif %}
 
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" role="button"
@@ -267,6 +288,22 @@
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' details.id %}">My Details</a>
                                         </button>
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
+                                        {% elif request.session.Reg_Num %}
+                                        <h2 style="text-align:center;">Hi,{{request.session.Reg_Num}}</h2>
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        <button class="dropdown-item">
+                                            <a href="{% url 'MyDetails' shp.id %}">My Details</a>
+                                        </button>
+                                        <button class="dropdown-item">
+                                            <a href="{% url 'PartnerDetails'%}">View Partner Details</a>
+                                        </button>
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
+                                        {% elif request.session.delivery_partner %}
+                                        <h2 style="text-align:center;">Hi,{{request.session.delivery_partner}}</h2>
+
                                         <hr style="border: 2px solid black; margin: 20px 0;">
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
                                         {% else %}
@@ -287,9 +324,7 @@
 
 
 <div class="container py-4">
-    <a href="{% url 'Delivery_Partner' %}" class="back-link">
-        <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
-    </a>
+
 
     <div class="order-card">
         <div class="order-header">
@@ -339,11 +374,12 @@
                     </div>
                 </div>
             </div>
-
+            {% if request.session.Reg_Num %}
+            <div></div>
+            {% elif request.session.delivery_partner %}
             <div class="section-title">
                 <i class="bi bi-truck"></i> Delivery Details
             </div>
-
             <div class="delivery-box">
                 <div class="status-update">
                     <div class="status-label">Update Delivery Status</div>
@@ -375,7 +411,9 @@
                     </form>
                 </div>
             </div>
-
+            {% else %}
+            <div></div>
+            {% endif %}
             <div class="section-title">
                 <i class="bi bi-cart"></i> Order Items
             </div>

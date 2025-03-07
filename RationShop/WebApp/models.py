@@ -15,6 +15,14 @@ class ShopOwner(models.Model):
     Reg_Num = models.CharField(max_length=100, unique=True)
     S_Mail = models.EmailField(max_length=100)
     S_Mobile = models.CharField(max_length=20)
+    State = models.CharField(max_length=100, null=True)
+    District = models.CharField(max_length=100, null=True)
+    Taluk = models.CharField(max_length=100, null=True)
+    Panchayat = models.CharField(max_length=100, null=True)
+    Place = models.CharField(max_length=100, null=True)
+
+    def __str__(self):
+        return f'{self.Reg_Num}'
 
 
 class BeneficiaryRegister(models.Model):
@@ -29,6 +37,11 @@ class BeneficiaryRegister(models.Model):
     U_Mail = models.EmailField(max_length=100)
     U_Mobile = models.CharField(max_length=20)
     Family_Members = models.IntegerField(null=True)
+    Shop_ID = models.CharField(max_length=100, null=True)
+    is_approved = models.BooleanField(default=False)  # New field to track approval status
+
+    def __str__(self):
+        return self.U_Name
 
 
 class ContactDB(models.Model):

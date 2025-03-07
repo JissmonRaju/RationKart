@@ -3,32 +3,61 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.db.models import Sum
 from django.db.models import Prefetch
+from .decorators import approval_required
 from AdminApp.models import Stock, RationItems
 from WebApp.models import BeneficiaryRegister, ContactDB, CartDB, ShopOwner, OrderDB, OrderStatus, Delivery
 from django.contrib import messages
 from django.db import IntegrityError
 import AdminApp.models
 import razorpay
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
 
 def home(request):
-
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
-    cart_count = CartDB.objects.filter(User_Name=request.session['Ration_Card'],order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=request.session['Ration_Card'], order__isnull=True)
     x = cart_count.count()
     stks = Stock.objects.all()
-    return render(request, 'Home.html', {'stks': stks, 'details': details,'x':x})
+    dev = Delivery.objects.all()
+    return render(request, 'Home.html', {'stks': stks, 'details': details, 'x': x,'dev':dev})
 
 
 def products(request):
-    cart_count = CartDB.objects.filter(User_Name=request.session['Ration_Card'],order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=request.session['Ration_Card'], order__isnull=True)
     x = cart_count.count()
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
 
     prod = RationItems.objects.all()
-    return render(request, 'Products.html', {'prod': prod, 'details': details,'x':x})
+    return render(request, 'Products.html', {'prod': prod, 'details': details, 'x': x})
+
+
+def shop_home(request):
+    det = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    cart_count = CartDB.objects.filter(User_Name=request.session['Reg_Num'], order__isnull=True)
+    x = cart_count.count()
+    return render(request, 'ShopHome.html', {'det': det, 'x': x})
+
+
+@approval_required
+def dashboard(request):
+    return render(request, 'Dashboard.html')
+
+
+@login_required
+def pending_requests(request):
+    # Ensure only shop owners see their pending requests
+    if hasattr(request.user, 'shopowner_profile'):
+        shop_id = request.user.shopowner_profile.Reg_Num
+        pending_beneficiaries = BeneficiaryRegister.objects.filter(Shop_ID=shop_id, is_approved=False)
+        return render(request, 'PendingRequests.html', {'pending_beneficiaries': pending_beneficiaries})
+
+    return redirect('dashboard')
+
+
+def approve_request(request):
+    return render(request, 'ApproveRequest.html')
 
 
 def signup_page(request):
@@ -44,27 +73,31 @@ def save_signup(request):
         u_mobile = request.POST.get('bmobile')
         u_pass = request.POST.get('bpass')
         fam_members = request.POST.get('members')
+        shp_id = request.POST.get('regnum')
 
         try:
-            # 1. Create Django User object, set username to Ration_Card
-            user = User.objects.create_user(username=ration_card, password=u_pass)  # Use ration_card as username
+            # Create Django user (Ration Card as username)
+            user = User.objects.create_user(username=ration_card, password=u_pass)
 
-            # 2. Create BeneficiaryRegister profile, linked to the User
-            beneficiary = BeneficiaryRegister.objects.create(
-                user=user,  # Link to the User object
+            # Create pending BeneficiaryRegister
+            BeneficiaryRegister.objects.create(
+                user=user,
                 U_Name=u_name,
-                Ration_Card=ration_card,  # Store Ration_Card in profile as well
+                Ration_Card=ration_card,
                 Card_Color=card_color,
                 U_Mail=u_mail,
                 U_Mobile=u_mobile,
-                Family_Members=fam_members
+                Family_Members=fam_members,
+                Shop_ID=shp_id,
+                is_approved=False  # Pending approval
             )
-            messages.success(request, "Registration successful! Please login")
-            return redirect('LoginPage')  # Redirect to login page
 
-        except IntegrityError:  # Catch username (Ration_Card) already exists error
-            messages.error(request, "Ration Card number already exists")
-            return redirect('SignUpPage')  # Redirect back to signup page (update template name if needed)
+            messages.success(request, "Signup request submitted! Waiting for shop owner's approval.")
+            return redirect('Dashboard')
+
+        except IntegrityError:
+            messages.error(request, "Ration Card number already exists.")
+            return redirect('SignUpPage')
 
     return redirect('SignUpPage')
 
@@ -76,6 +109,11 @@ def shop_signup(request):
         s_mail = request.POST.get('smail')
         s_mobile = request.POST.get('smobile')
         s_pass = request.POST.get('spass')
+        state = request.POST.get('state')
+        dist = request.POST.get('dist')
+        taluk = request.POST.get('taluk')
+        panch = request.POST.get('panch')
+        location = request.POST.get('place')
 
         try:
             # 1. Create Django User object, set username to Reg_Num
@@ -88,6 +126,10 @@ def shop_signup(request):
                 Reg_Num=reg_num,  # Store Reg_Num in profile as well
                 S_Mail=s_mail,
                 S_Mobile=s_mobile,
+                State=state,
+                District=dist, Taluk=taluk,
+                Panchayat=panch,
+                Place=location
             )
             messages.success(request, "Shop Owner registration successful! Please login.")
             return redirect('LoginPage')  # Redirect to login page
@@ -97,13 +139,6 @@ def shop_signup(request):
             return redirect('ShopSignUpPage')  # Redirect back to signup page (update template name if needed)
 
     return redirect('ShopSignUpPage')
-
-
-def shop_home(request):
-    det = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
-    cart_count = CartDB.objects.filter(User_Name=request.session['Reg_Num'],order__isnull=True)
-    x = cart_count.count()
-    return render(request, 'ShopHome.html', {'det': det,'x':x})
 
 
 def login_page(request):
@@ -163,9 +198,9 @@ def contact_us(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
     shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
     usr_name = request.session.get('Reg_Num') or request.session.get('Ration_Card')
-    cart_count = CartDB.objects.filter(User_Name=usr_name,order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
     x = cart_count.count()
-    return render(request, 'ContactUs.html', {'details': details, 'shp': shp,'x':x})
+    return render(request, 'ContactUs.html', {'details': details, 'shp': shp, 'x': x})
 
 
 def save_contact(request):
@@ -182,10 +217,10 @@ def save_contact(request):
 def about_page(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
     usr_name = request.session.get('Reg_Num') or request.session.get('Ration_Card')
-    cart_count = CartDB.objects.filter(User_Name=usr_name,order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
     x = cart_count.count()
     shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
-    return render(request, 'AboutUs.html', {'details': details, 'shp': shp,'x':x})
+    return render(request, 'AboutUs.html', {'details': details, 'shp': shp, 'x': x})
 
 
 def single_product(request, si_id):
@@ -202,29 +237,60 @@ def single_product(request, si_id):
     already_in_cart = user_cart  # Pass this to the template
 
     # For Yellow card, the allocation is fixed for the household (not per person)
-    if prod and prod.Card_Color == "Yellow":
-        if sing.Ration == "Rice":
-            final_quantity = 28
-        elif sing.Ration == "Wheat":
-            final_quantity = 7
+    if prod:
+        if prod.Card_Color == "Yellow":
+            # Yellow card: amounts per card (not per person)
+            mapping = {
+                "White Rice": 9,
+                "Boiled Rice": 15,
+                "Raw Rice": 6,
+                "Wheat": 5,
+            }
+            final_quantity = mapping.get(sing.Ration, 35)  # default 35 if not found
+
+        elif prod.Card_Color == "White":
+            # White card: amounts per card (no Wheat allocated)
+            mapping = {
+                "White Rice": 2,
+                "Boiled Rice": 3,
+                "Raw Rice": 1,
+            }
+            # If Wheat is requested, you might want to explicitly set it to 0
+            final_quantity = mapping.get(sing.Ration, 0)
+
+        elif prod.Card_Color == "Pink":
+            # Pink card: allocation per person
+            mapping = {
+                "White Rice": 1,
+                "Boiled Rice": 2,
+                "Raw Rice": 0.5,
+                "Wheat": 0.5,
+            }
+            # Multiply the per-person allocation by the number of family members
+            final_quantity = mapping.get(sing.Ration, 0) * family_members
+
+        elif prod.Card_Color == "Blue":
+            # Blue card: allocation per person
+            mapping = {
+                "White Rice": 0.5,
+                "Boiled Rice": 1,
+                "Raw Rice": 0.5,
+            }
+            final_quantity = mapping.get(sing.Ration, 0) * family_members
+
         else:
-            final_quantity = 35
-    else:
-        allocations = {
-            "Pink": {"Rice": 4, "Wheat": 1},
-            "Blue": {"Rice": 2},
-            "White": {"Rice": 8.90, "Wheat": 6.70}
-        }
-        if prod and prod.Card_Color in allocations and sing.Ration in allocations[prod.Card_Color]:
-            per_member_qty = allocations[prod.Card_Color][sing.Ration]
-            final_quantity = per_member_qty * family_members
-        else:
-            product_defaults = {"Wheat": 3, "Boiled Rice": 5, "Matta Rice": 5, "Raw Rice": 7}
+            # Default/fallback case if card color is not recognized.
+            product_defaults = {
+                "Wheat": 1,
+                "Boiled Rice": 1,
+                "Matta Rice": 1,
+                "Raw Rice": 1,
+            }
             default_quantity = product_defaults.get(sing.Ration, 1)
             final_quantity = default_quantity * family_members
 
-    usr_name = request.session.get('Ration_Cart')
-    cart_count = CartDB.objects.filter(User_Name=usr_name,order__isnull=True)
+    usr_name = request.session.get('Ration_Card')
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
     x = cart_count.count()
     return render(request, 'SingleProduct.html', {
         'sing': sing,
@@ -232,14 +298,14 @@ def single_product(request, si_id):
         'final_quantity': final_quantity,
         'already_in_cart': already_in_cart,
         'details': details,
-        'x':x
+        'x': x
     })
 
 
 def cart_page(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
     shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
-  # Get user identifier
+    # Get user identifier
 
     if details:
         crt = CartDB.objects.filter(User_Name=request.session['Ration_Card'],
@@ -258,11 +324,11 @@ def cart_page(request):
 
     item_count = crt.count()  # item_count should also be based on *crt*
     usr_name = request.session.get('Reg_Num') or request.session.get('Ration_Card')
-    cart_count = CartDB.objects.filter(User_Name=usr_name,order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
     x = cart_count.count()
     return render(request, 'CartPage.html',
                   {'crt': crt, 'details': details, 'shp': shp, 'total_price': total_price, 'item_count': item_count,
-                   'quant': quant,'x':x})
+                   'quant': quant, 'x': x})
 
 
 def save_cart(request):
@@ -378,9 +444,9 @@ def my_details(request, my_id):
     details = BeneficiaryRegister.objects.filter(id=my_id).first()
     det = ShopOwner.objects.filter(id=my_id).first()
     usr_name = request.session.get('Reg_Num') or request.session.get('Ration_Card')
-    cart_count = CartDB.objects.filter(User_Name=usr_name,order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
     x = cart_count.count()
-    return render(request, 'MyDetails.html', {'details': details, 'det': det,'x':x})
+    return render(request, 'MyDetails.html', {'details': details, 'det': det, 'x': x})
 
 
 def checkout_page(request):
@@ -405,7 +471,7 @@ def checkout_page(request):
     shp = ShopOwner.objects.filter(Reg_Num=shp_ownr).first()
     details = BeneficiaryRegister.objects.filter(Ration_Card=usr_cust).first()
     usr_name = request.session.get('Reg_Num') or request.session.get('Ration_Card')
-    cart_count = CartDB.objects.filter(User_Name=usr_name,order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
     x = cart_count.count()
     return render(request, 'CheckOut.html', {
         'chk': chk,  # Now 'chk' should only contain CURRENT cart items
@@ -413,7 +479,7 @@ def checkout_page(request):
         'shp': shp,
         'total_price': total_price,  # Corrected total_price calculation
         'item_count': item_count,
-        'x':x
+        'x': x
     })
 
 
@@ -421,9 +487,9 @@ def shop_stock(request):
     details = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
     stks = Stock.objects.all()
     usr_name = request.session.get('Reg_Num')
-    cart_count = CartDB.objects.filter(User_Name=usr_name,order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
     x = cart_count.count()
-    return render(request, 'ShopStock.html', {'details': details, 'stks': stks,'x':x})
+    return render(request, 'ShopStock.html', {'details': details, 'stks': stks, 'x': x})
 
 
 def shop_single_prod(request, s_id):
@@ -431,11 +497,9 @@ def shop_single_prod(request, s_id):
     singl = Stock.objects.get(id=s_id)
     produ = Stock.objects.all()
     usr_name = request.session.get('Reg_Num')
-    cart_count = CartDB.objects.filter(User_Name=usr_name,order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
     x = cart_count.count()
-    return render(request, 'ShopSingleProd.html', {'singl': singl, 'produ': produ, 'details': details,'x':x})
-
-
+    return render(request, 'ShopSingleProd.html', {'singl': singl, 'produ': produ, 'details': details, 'x': x})
 
 
 def order_page(request):
@@ -470,7 +534,7 @@ def order_page(request):
     shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
     usr_name = request.session.get('Reg_Num') or request.session.get('Ration_Card')
-    cart_count = CartDB.objects.filter(User_Name=usr_name,order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
     x = cart_count.count()
     return render(request, 'OrderPage.html', {
         'orders': orders,
@@ -478,7 +542,7 @@ def order_page(request):
         'details': details,
         'shp': shp,
         'user': request.user,
-        'x':x
+        'x': x
     })
 
 
@@ -491,8 +555,10 @@ def save_checkout(request):
         if not user_identifier:
             print("DEBUG: NO user_identifier found. Redirecting to login.")
             return redirect('login')
-
+        usr_name = request.session.get('Reg_Num') or request.session.get('Ration_Card')
         cart_items_for_order = CartDB.objects.filter(User_Name=user_identifier, order__isnull=True)
+        cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
+        x = cart_count.count()
 
         if not cart_items_for_order.exists():
             print("DEBUG: Cart is EMPTY. Redirecting to CartPage.")
@@ -531,13 +597,22 @@ def save_checkout(request):
         else:
             print(f"DEBUG: save_checkout - Cart was already empty for user {user_identifier}.")
 
+        if request.session.get('Ration_Card') is not None and x != 0:
+            return redirect(products)
         # Corrected conditional check using .get() with a default of None
-        if request.session.get('Ration_Card') is not None:  # Use .get() to avoid KeyError
+        elif request.session.get('Ration_Card') is not None and x != 0:  # Use .get() to avoid KeyError
             print("DEBUG: Beneficiary checkout - Redirecting...")
-            # Define 'home' and 'payment_page' URLs - replace placeholders with your actual URL names
-            home_url = 'Home'  # Replace 'Home' with your actual URL name for beneficiary home
-            payment_page_url = 'payment_page'  # Replace 'payment_page' with your payment URL
-            return redirect(home_url) if request.POST.get('payment_option') == 'cod' else redirect(payment_page_url)
+            if request.POST.get('payment_option') == 'cod':
+                return redirect(home)
+            elif request.POST.get('payment_option') == 'online':
+                return redirect(payment_page)
+            elif request.POST.get('payment_option') == 'upi':
+                return redirect(payment_page)
+            elif request.POST.get('payment_option') == 'card':
+                return redirect(payment_page)
+            else:
+                return redirect(home)
+
         elif request.session.get('Reg_Num') is not None:  # Use .get() for Reg_Num too
             print("DEBUG: Shop Owner checkout - Redirecting to shop home...")  # Debug for shop owner path
             shop_home_url = 'ShopHome'  # Replace 'ShopHome' with actual shop home URL
@@ -559,32 +634,6 @@ def delivery_partner(request):
             beneficiary_orders.append(order)
 
     return render(request, 'Delivery_Partner.html', {'order_n': beneficiary_orders})
-
-
-def update_status(request, order_num):
-    if request.method == 'POST':
-        new_status = request.POST.get('status')  # Get the new status from the form data
-
-        order = get_object_or_404(OrderDB, Order_Num=order_num)  # Get the OrderDB instance using Order_Num
-        order_status = order.status  # Access the related OrderStatus
-
-        order_status.status = new_status  # Update the status
-        order_status.save()  # Save the updated OrderStatus
-
-    return redirect('Delivery_Partner')
-
-
-def order_details(request, order_num):  # 1. Accept order_num as URL parameter
-    order = get_object_or_404(OrderDB, Order_Num=order_num)  # 2. Fetch SINGLE order by order_num
-    cart_items = order.cart_items.all()  # 3. Get related cart items for this order
-    order_status = order.status  # 4. Get related order status
-
-    context = {
-        'order': order,  # Pass the single order object
-        'cart_items': cart_items,  # Pass the cart items related to this order
-        'order_status': order_status,  # Pass the order status object
-    }
-    return render(request, 'OrderStatus.html', context)  # Render with context
 
 
 def signup_delivery(request):
@@ -649,3 +698,65 @@ def payment_page(request):
 def cancel_payment(request):
     messages.error(request, 'Payment Canceled')
     return redirect(checkout_page)
+
+
+def request_page(request):
+    shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    usr_name = request.session.get('Reg_Num')
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
+    x = cart_count.count()
+    all_orders = OrderDB.objects.all()
+    beneficiary_orders = []
+    for order in all_orders:
+        if BeneficiaryRegister.objects.filter(Ration_Card=order.User_Name).exists():
+            beneficiary_orders.append(order)
+    return render(request, 'Request.html', {'shp': shp, 'x': x, 'order_n': beneficiary_orders})
+
+
+def update_status(request, order_num):
+    if request.method == 'POST':
+        new_status = request.POST.get('status')  # Get the new status from the form data
+        order = get_object_or_404(OrderDB, Order_Num=order_num)  # Get the order using Order_Num
+        order_status = order.status  # Access the related OrderStatus
+
+        order_status.status = new_status  # Update the status
+        order_status.save()  # Save the updated OrderStatus
+
+    # Redirect based on the user's role. Shop owners are taken back to their Requests page.
+    if request.session.get('Reg_Num'):
+        return redirect('Requests')  # Change 'Requests' to your shop owner-specific URL name if needed
+    else:
+        return redirect('Delivery_Partner')
+
+
+def order_details(request, order_num):
+    order = get_object_or_404(OrderDB, Order_Num=order_num)  # Fetch the order by order_num
+    cart_items = order.cart_items.all()  # Get related cart items for this order
+    order_status = order.status  # Get the associated order status
+    shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
+    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
+    all_orders = OrderDB.objects.all()
+    order_n = []
+    for order in all_orders:
+        if BeneficiaryRegister.objects.filter(Ration_Card=order.User_Name).exists():
+            order_n.append(order)
+    context = {
+        'order': order,
+        'cart_items': cart_items,
+        'order_status': order_status,
+        'details': details,
+        'shp': shp,
+        'order_n': order_n
+
+    }
+
+    # Use a different template or add extra context for shop owners if needed.
+    if request.session.get('is_shop_owner'):
+        return render(request, 'ShopOwnerOrderStatus.html', context)
+    else:
+        return render(request, 'OrderStatus.html', context)
+
+
+def partner_details(request):
+    dev = Delivery.objects.all()
+    return render(request,'DeliveryPartnerDetails.html',{'dev':dev})
