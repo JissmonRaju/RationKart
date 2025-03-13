@@ -12,10 +12,22 @@ urlpatterns = [
     path('About/', views.about_page, name='About'),
 
     path('SignUpPage/', views.signup_page, name='SignUpPage'),
-    path('SignUp/', views.save_signup, name='SignUp'),
+    path('SaveSignUp/', views.save_signup, name='SaveSignUp'),
+    path('PendingApproval/', views.pending_approval, name='PendingApproval'),
+    path('check-approval-status/', views.check_approval_status, name='check_approval_status'),
+    path('final_status/<int:beneficiary_id>/', views.final_status, name='Status'),
+
+    # Login
     path('', views.login_page, name='LoginPage'),
     path('Login/', views.save_login, name='Login'),
     path('LogOut/', views.log_out, name='LogOut'),
+
+    # Shop Owner side
+    path('ApproveRequests/', views.pending_requests, name='ApproveRequests'),
+    path('approve/<int:beneficiary_id>/', views.approve_beneficiary, name='approve_beneficiary'),
+    path('reject/<int:beneficiary_id>/', views.reject_beneficiary, name='reject_beneficiary'),
+
+
 
     path('CartPage/', views.cart_page, name='CartPage'),
     path('SingleProduct/<int:si_id>/', views.single_product, name='SingleProduct'),
@@ -24,8 +36,8 @@ urlpatterns = [
 
     path('Shop/', views.sin_up, name='Shop'),
     path('MyDetails/<int:my_id>/', views.my_details, name='MyDetails'),
-    path('ShopHome/', views.shop_home, name='ShopHome'),
     path('SaveShop/', views.shop_signup, name='SaveShop'),
+    path('ShopHome/', views.shop_home, name='ShopHome'),
 
     path('OrderPage/', views.order_page, name='OrderPage'),
 
@@ -44,12 +56,17 @@ urlpatterns = [
     path('SaveDelivery_SignUp/', views.save_delivery_signup, name='SaveDelivery_SignUp'),
 
     path('PaymentPage/', views.payment_page, name='PaymentPage'),
+    path('verify-payment/', views.verify_payment, name='verify_payment'),
     path('CancelPayment/', views.cancel_payment, name='CancelPayment'),
 
     path('Requests/', views.request_page, name='Requests'),
-    path('Dashboard/', views.dashboard, name='Dashboard'),
-    path('ApproveRequests/', views.approve_request, name='ApproveRequests'),
-    path('PartnerDetails/', views.partner_details, name='PartnerDetails'),
-    path('PendingRequests/', views.pending_requests, name='PendingRequests'),
+
+    path('PartnerDetails/', views.delivery_partner_list, name='PartnerDetails'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset-password/', views.reset_password, name='reset_password'),
+
+
+
+
 
 ]

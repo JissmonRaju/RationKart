@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <div id="container" class="container">
@@ -32,9 +33,11 @@
 							</button>
 						</form>
 						<p>
-							<b>
+							<a href="{% url 'forgot_password' %}">
+								<b>
 								Forgot password?
 							</b>
+							</a>
 						</p>
 						<p>
 							<span>
@@ -447,8 +450,38 @@ setTimeout(() => {
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+function newfunct() {
+const uname = document.newform.uname.value.trim();
+const pass = document.newform.pass.value.trim();
+
+if (!uname) {
+alert("Please enter your Ration Card Number or Register Number.");
+return false; // Prevent form submission
+}
+
+if (!pass) {
+alert("Please enter your Password.");
+return false; // Prevent form submission
+}
+
+// Optional: Add length or format checks here if needed
+
+return true; // Allow form submission
+}
 
 
+{% if messages %}
+<script>
+	{% for message in messages %}
+        Swal.fire({
+            title: '{{ message.tags|title }}',
+            text: '{{ message }}',
+            icon: '{{ message.tags }}',
+            confirmButtonText: 'OK'
+        });
+    {% endfor %}
+</script>
+{% endif %}
 
 
 

@@ -67,13 +67,15 @@
                 Back to Home Page
             </button>
         </a>
+
     </div>
-    {% for i in dev %}
-    {% if request.session.Reg_Num %}
+
+    {% if partners %}
+    {% for partner in partners %}
     <div class="card p-4 mb-4 mt-3">
         <div class="d-flex align-items-center">
             <div>
-                <h2 class="mb-1">Name of Delivery Partner : <b>{{i.D_Partner}}</b></h2>
+                <h2 class="mb-1">Name of Delivery Partner : <b>{{partner.D_Partner}}</b></h2>
             </div>
         </div>
     </div>
@@ -86,7 +88,7 @@
                     <i class="fas fa-envelope me-3 text-primary"></i>
                     <div>
                         <div class="text-muted small">Shop ID :</div>
-                        <div>{{i.D_Shop}}</div>
+                        <div>{{partner.D_Shop}}</div>
                     </div>
                 </div>
             </div>
@@ -99,19 +101,30 @@
                     <i class="fas fa-phone me-3 text-primary"></i>
                     <div>
                         <div class="text-muted small">Phone Number :</div>
-                        <div>+91 {{i.D_Phone}}</div>
+                        <div>+91 {{partner.D_Phone}}</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Location -->
-
-
-        <!-- Employee ID -->
-
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-image me-3 text-primary"></i>
+                    <div>
+                        <div class="text-muted small">Partner Image :</div>
+                        <div>
+                            <img src="{{partner.D_Pic.url}}" width="100px" height="100px">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
+    {% endfor %}
+    {% else %}
+    <p>No delivery partners found for your shop.</p>
+    {% endif %}
     <div class="row mt-5 d-flex justify-content-end">
         <div class="col-auto">
             <a href="{% url 'Delivery_SignUp' %}">
@@ -122,10 +135,24 @@
     </div>
 
 
-    {% endif %}
-    {% endfor %}
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% if messages %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    {% for message in messages %}
+        Swal.fire({
+            title: '{{ message.tags|title }}',
+            text: '{{ message }}',
+            icon: '{{ message.tags }}',
+            confirmButtonText: 'OK',
+            backdrop: true
+        });
+    {% endfor %}
+     });
+</script>
+{% endif %}
 
 </body>
 </html>

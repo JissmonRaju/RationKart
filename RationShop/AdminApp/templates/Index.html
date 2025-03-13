@@ -142,25 +142,35 @@
                     </li>
 
                     <li class="sidebar-item">
-                        <a class="sidebar-link" href="./ui-forms.html" aria-expanded="false">
+                        <a class="sidebar-link" href="{% url 'View_Delivery' %}" aria-expanded="false">
                 <span>
                   <i class="ti ti-file-description"></i>
                 </span>
-                            <span class="hide-menu">Forms</span>
+                            <span class="hide-menu">View Delivery</span>
                         </a>
                     </li>
                     <li class="sidebar-item">
-                        <a class="sidebar-link" href="./ui-typography.html" aria-expanded="false">
+                        <a class="sidebar-link" href="{% url 'View_Shops' %}" aria-expanded="false">
                 <span>
                   <i class="ti ti-typography"></i>
                 </span>
-                            <span class="hide-menu">Typography</span>
+                            <span class="hide-menu">View Shop Owners</span>
                         </a>
                     </li>
                     <li class="nav-small-cap">
                         <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
                         <span class="hide-menu">AUTH</span>
                     </li>
+                    {% if request.session.username %}
+                    <li class="sidebar-item">
+                        <a class="sidebar-link" href="{% url 'AdminLogOut' %}" aria-expanded="false">
+                <span>
+                  <i class="ti ti-logout"></i>
+                </span>
+                            <span class="hide-menu">Log Out</span>
+                        </a>
+                    </li>
+                    {% else %}
                     <li class="sidebar-item">
                         <a class="sidebar-link" href="{% url 'AdminLoginPage' %}" aria-expanded="false">
                 <span>
@@ -169,47 +179,11 @@
                             <span class="hide-menu">Login</span>
                         </a>
                     </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="./authentication-register.html" aria-expanded="false">
-                <span>
-                  <i class="ti ti-user-plus"></i>
-                </span>
-                            <span class="hide-menu">Register</span>
-                        </a>
-                    </li>
-                    <li class="nav-small-cap">
-                        <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
-                        <span class="hide-menu">EXTRA</span>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="./icon-tabler.html" aria-expanded="false">
-                <span>
-                  <i class="ti ti-mood-happy"></i>
-                </span>
-                            <span class="hide-menu">Icons</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-item">
-                        <a class="sidebar-link" href="./sample-page.html" aria-expanded="false">
-                <span>
-                  <i class="ti ti-aperture"></i>
-                </span>
-                            <span class="hide-menu">Sample Page</span>
-                        </a>
-                    </li>
+
+                    {% endif %}
+
                 </ul>
-                <div class="unlimited-access hide-menu bg-light-primary position-relative mb-7 mt-5 rounded">
-                    <div class="d-flex">
-                        <div class="unlimited-access-title me-3">
-                            <h6 class="fw-semibold fs-4 mb-6 text-dark w-85">Upgrade to pro</h6>
-                            <a href="https://adminmart.com/product/modernize-bootstrap-5-admin-template/"
-                               target="_blank" class="btn btn-primary fs-2 fw-semibold lh-sm">Buy Pro</a>
-                        </div>
-                        <div class="unlimited-access-img">
-                            <img src="../assets/images/backgrounds/rocket.png" alt="" class="img-fluid">
-                        </div>
-                    </div>
-                </div>
+
             </nav>
             <!-- End Sidebar navigation -->
         </div>
@@ -300,7 +274,7 @@
                                     <h5 class="card-title mb-9 fw-semibold">Yearly Breakup</h5>
                                     <div class="row align-items-center">
                                         <div class="col-8">
-                                            <h4 class="fw-semibold mb-3">$36,358</h4>
+                                            <h4 class="fw-semibold mb-3">₹ 36,358</h4>
                                             <div class="d-flex align-items-center mb-3">
                           <span
                                   class="me-1 rounded-circle bg-light-success round-20 d-flex align-items-center justify-content-center">
@@ -336,7 +310,7 @@
                                     <div class="row alig n-items-start">
                                         <div class="col-8">
                                             <h5 class="card-title mb-9 fw-semibold"> Monthly Earnings </h5>
-                                            <h4 class="fw-semibold mb-3">$6,820</h4>
+                                            <h4 class="fw-semibold mb-3">₹ 6,820</h4>
                                             <div class="d-flex align-items-center pb-1">
                           <span
                                   class="me-2 rounded-circle bg-light-danger round-20 d-flex align-items-center justify-content-center">
@@ -363,132 +337,11 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card overflow-hidden rounded-2">
-                        <div class="position-relative">
-                            <a href="javascript:void(0)"><img src="../assets/images/products/s4.jpg"
-                                                              class="card-img-top rounded-0" alt="..."></a>
-                            <a href="javascript:void(0)"
-                               class="bg-primary rounded-circle p-2 text-white d-inline-flex position-absolute bottom-0 end-0 mb-n3 me-3"
-                               data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add To Cart"><i
-                                    class="ti ti-basket fs-4"></i></a></div>
-                        <div class="card-body pt-3 p-4">
-                            <h6 class="fw-semibold fs-4">Boat Headphone</h6>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="fw-semibold fs-4 mb-0">$50 <span class="ms-2 fw-normal text-muted fs-3"><del>$65</del></span>
-                                </h6>
-                                <ul class="list-unstyled d-flex align-items-center mb-0">
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card overflow-hidden rounded-2">
-                        <div class="position-relative">
-                            <a href="javascript:void(0)"><img src="../assets/images/products/s5.jpg"
-                                                              class="card-img-top rounded-0" alt="..."></a>
-                            <a href="javascript:void(0)"
-                               class="bg-primary rounded-circle p-2 text-white d-inline-flex position-absolute bottom-0 end-0 mb-n3 me-3"
-                               data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add To Cart"><i
-                                    class="ti ti-basket fs-4"></i></a></div>
-                        <div class="card-body pt-3 p-4">
-                            <h6 class="fw-semibold fs-4">MacBook Air Pro</h6>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="fw-semibold fs-4 mb-0">$650 <span class="ms-2 fw-normal text-muted fs-3"><del>$900</del></span>
-                                </h6>
-                                <ul class="list-unstyled d-flex align-items-center mb-0">
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card overflow-hidden rounded-2">
-                        <div class="position-relative">
-                            <a href="javascript:void(0)"><img src="../assets/images/products/s7.jpg"
-                                                              class="card-img-top rounded-0" alt="..."></a>
-                            <a href="javascript:void(0)"
-                               class="bg-primary rounded-circle p-2 text-white d-inline-flex position-absolute bottom-0 end-0 mb-n3 me-3"
-                               data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add To Cart"><i
-                                    class="ti ti-basket fs-4"></i></a></div>
-                        <div class="card-body pt-3 p-4">
-                            <h6 class="fw-semibold fs-4">Red Valvet Dress</h6>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="fw-semibold fs-4 mb-0">$150 <span class="ms-2 fw-normal text-muted fs-3"><del>$200</del></span>
-                                </h6>
-                                <ul class="list-unstyled d-flex align-items-center mb-0">
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card overflow-hidden rounded-2">
-                        <div class="position-relative">
-                            <a href="javascript:void(0)"><img src="../assets/images/products/s11.jpg"
-                                                              class="card-img-top rounded-0" alt="..."></a>
-                            <a href="javascript:void(0)"
-                               class="bg-primary rounded-circle p-2 text-white d-inline-flex position-absolute bottom-0 end-0 mb-n3 me-3"
-                               data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Add To Cart"><i
-                                    class="ti ti-basket fs-4"></i></a></div>
-                        <div class="card-body pt-3 p-4">
-                            <h6 class="fw-semibold fs-4">Cute Soft Teddybear</h6>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h6 class="fw-semibold fs-4 mb-0">$285 <span class="ms-2 fw-normal text-muted fs-3"><del>$345</del></span>
-                                </h6>
-                                <ul class="list-unstyled d-flex align-items-center mb-0">
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="me-1" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                    <li><a class="" href="javascript:void(0)"><i
-                                            class="ti ti-star text-warning"></i></a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
             <div class="py-6 px-6 text-center">
-                <p class="mb-0 fs-4">Design and Developed by <a href="https://adminmart.com/" target="_blank"
-                                                                class="pe-1 text-primary text-decoration-underline">AdminMart.com</a>
-                    Distributed by <a href="https://themewagon.com">ThemeWagon</a></p>
+                <p class="mb-0 fs-4">Design and Developed by <a href="#"
+                                                                class="pe-1 text-primary text-decoration-underline">RationKart.com</a>
+                    Distributed by <a href="#">RationKart</a></p>
             </div>
         </div>
         {% endblock %}

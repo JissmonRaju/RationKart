@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pending Approvals - RationKart</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -193,126 +194,60 @@
         <table class="table">
             <thead>
             <tr>
-                <th>ID</th>
-                <th>Type</th>
                 <th>Name</th>
-                <th>Submitted By</th>
-                <th>Date</th>
-                <th>Notes</th>
+                <th>Card Number</th>
+
                 <th>Actions</th>
             </tr>
             </thead>
             <tbody>
+            {% if pending_beneficiaries %}
+            {% for beneficiary in pending_beneficiaries %}
             <tr>
-                <td>PA-001</td>
-                <td><span class="badge badge-adventure">Adventure</span></td>
-                <td>Mountain Expedition</td>
-                <td>John Smith</td>
-                <td>2023-06-10</td>
-                <td>New adventure location in the Alps</td>
+                <td>{{ beneficiary.U_Name }}</td>
+                <td>{{ beneficiary.Ration_Card }}</td>
+
                 <td>
-                    <div class="actions-cell">
-                        <button class="action-btn approve-btn">
-                            <i class="bi bi-check-lg"></i>
+                    <form method="POST" action="{% url 'approve_beneficiary' beneficiary.id %}">
+                        {% csrf_token %}
+                        <button class="btn approve-btn" type="submit">Approve
                         </button>
-                        <button class="action-btn reject-btn">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                        <button class="action-btn details-btn">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </div>
+                    </form>
+
+                </td>
+                <td>
+                    <form method="POST" action="{% url 'reject_beneficiary' beneficiary.id %}">
+                        {% csrf_token %}
+                        <button class="btn reject-btn" type="submit">Reject</button>
+                    </form>
+
                 </td>
             </tr>
-            <tr>
-                <td>PA-002</td>
-                <td><span class="badge badge-booking">Booking</span></td>
-                <td>Group Safari Tour</td>
-                <td>Emily Johnson</td>
-                <td>2023-06-11</td>
-                <td>Large group booking needs special approval</td>
-                <td>
-                    <div class="actions-cell">
-                        <button class="action-btn approve-btn">
-                            <i class="bi bi-check-lg"></i>
-                        </button>
-                        <button class="action-btn reject-btn">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                        <button class="action-btn details-btn">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>PA-003</td>
-                <td><span class="badge badge-location">Location</span></td>
-                <td>Coastal Beach Resort</td>
-                <td>Michael Davis</td>
-                <td>2023-06-12</td>
-                <td>New partner location for water activities</td>
-                <td>
-                    <div class="actions-cell">
-                        <button class="action-btn approve-btn">
-                            <i class="bi bi-check-lg"></i>
-                        </button>
-                        <button class="action-btn reject-btn">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                        <button class="action-btn details-btn">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>PA-004</td>
-                <td><span class="badge badge-discount">Discount</span></td>
-                <td>Summer Special 30%</td>
-                <td>Sarah Wilson</td>
-                <td>2023-06-13</td>
-                <td>Seasonal discount for all water adventures</td>
-                <td>
-                    <div class="actions-cell">
-                        <button class="action-btn approve-btn">
-                            <i class="bi bi-check-lg"></i>
-                        </button>
-                        <button class="action-btn reject-btn">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                        <button class="action-btn details-btn">
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
+            {% endfor %}
+
+            {% else %}
+            <tr>No pending requests.</tr>
+            {% endif %}
+
             </tbody>
         </table>
     </div>
 
 
-    {% if pending_beneficiaries %}
-    <ul>
-        {% for beneficiary in pending_beneficiaries %}
-        <li>
-            {{ beneficiary.U_Name }} (Ration Card: {{ beneficiary.Ration_Card }})
-            <form method="POST" action="{% url 'approve_beneficiary' beneficiary.id %}">
-                {% csrf_token %}
-                <button type="submit">Approve</button>
-            </form>
-            <form method="POST" action="{% url 'reject_beneficiary' beneficiary.id %}">
-                {% csrf_token %}
-                <button type="submit">Reject</button>
-            </form>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No pending requests.</p>
-    {% endif %}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+{% if messages %}
+<script>
+    {% for message in messages %}
+        Swal.fire({
+            title: '{{ message.tags|title }}',
+            text: '{{ message }}',
+            icon: '{{ message.tags }}',
+            confirmButtonText: 'OK'
+        });
+    {% endfor %}
+</script>
+{% endif %}
 </body>
 </html>
