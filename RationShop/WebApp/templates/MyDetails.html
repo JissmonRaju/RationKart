@@ -321,17 +321,40 @@
                 </div>
                 <div class="col-6 col-lg-2 offset-lg-1 mb-4">
                     <h4 style="color:white;" class="mb-4 border-bottom">Important Links</h4>
+                    {% if request.session.Reg_Num %}
+                    <ul class="mb-4">
+                        <li class="mb-2"><a href="{% url 'ShopHome' %}" style="color:white;">Home</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'ShopStock' %}">Products</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'About' %}">About Us</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'ContactUs' %}">Contact Us</a>
+                        </li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'CartPage' %}">Cart</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'OrderPage' %}">Your Orders</a>
+                        </li>
+
+                    </ul>
+                    {% elif request.session.Ration_Card %}
                     <ul class="mb-4">
                         <li class="mb-2"><a href="{% url 'Home' %}" style="color:white;">Home</a></li>
                         <li class="mb-2"><a style="color:white;" href="{% url 'Products' %}">Products</a></li>
                         <li class="mb-2"><a style="color:white;" href="{% url 'About' %}">About Us</a></li>
                         <li class="mb-2"><a style="color:white;" href="{% url 'ContactUs' %}">Contact Us</a>
                         </li>
-                        <li class="mb-2"><a style="color:white;" href="https://themes.getbootstrap.com/">Cart</a></li>
-                        <li class="mb-2"><a style="color:white;" href="https://blog.getbootstrap.com/">Your Orders</a>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'CartPage' %}">Cart</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'OrderPage' %}">Your Orders</a>
                         </li>
 
                     </ul>
+                    {% elif request.session.delivery_partner %}
+                    <ul class="mb-4">
+                        <li class="mb-2"><a href="{% url 'Delivery_Partner' %}" style="color:white;">Home</a></li>
+
+                        <li class="mb-2"><a style="color:white;" href="{% url 'About' %}">About Us</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'ContactUs' %}">Contact Us</a>
+                    </ul>
+                    {% else %}
+                    <ul></ul>
+                    {% endif %}
                 </div>
                 <div class="col-6 col-lg-2 mb-3">
                     <h4 style="color:white;" class="border-bottom mb-4">For Admins</h4>
@@ -339,44 +362,9 @@
                         <li class="mb-2"><a style="color:white;" href="{% url 'AdminLoginPage' %}">Go To Admin
                             DashBoard</a></li>
 
-                        <li class="mb-2"><a href="/docs/5.3/examples/starter-template/">Starter template</a>
-                        </li>
-                        <li class="mb-2"><a href="/docs/5.3/getting-started/webpack/">Webpack</a></li>
-                        <li class="mb-2"><a href="/docs/5.3/getting-started/parcel/">Parcel</a></li>
-                        <li class="mb-2"><a href="/docs/5.3/getting-started/vite/">Vite</a></li>
                     </ul>
                 </div>
-                <div class="col-6 col-lg-2 mb-3">
-                    <h5>Projects</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap" target="_blank"
-                                            rel="noopener">Bootstrap 5</a></li>
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap/tree/v4-dev" target="_blank"
-                                            rel="noopener">Bootstrap 4</a></li>
-                        <li class="mb-2"><a href="https://github.com/twbs/icons" target="_blank"
-                                            rel="noopener">Icons</a>
-                        </li>
-                        <li class="mb-2"><a href="https://github.com/twbs/rfs" target="_blank" rel="noopener">RFS</a>
-                        </li>
-                        <li class="mb-2"><a href="https://github.com/twbs/examples/" target="_blank"
-                                            rel="noopener">Examples repo</a></li>
-                    </ul>
-                </div>
-                <div class="col-6 col-lg-2 mb-3">
-                    <h5>Community</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap/issues" target="_blank"
-                                            rel="noopener">Issues</a></li>
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap/discussions" target="_blank"
-                                            rel="noopener">Discussions</a></li>
-                        <li class="mb-2"><a href="https://github.com/sponsors/twbs" target="_blank"
-                                            rel="noopener">Corporate sponsors</a></li>
-                        <li class="mb-2"><a href="https://opencollective.com/bootstrap" target="_blank"
-                                            rel="noopener">Open Collective</a></li>
-                        <li class="mb-2"><a href="https://stackoverflow.com/questions/tagged/bootstrap-5"
-                                            target="_blank" rel="noopener">Stack Overflow</a></li>
-                    </ul>
-                </div>
+
             </div>
 
         </div>
