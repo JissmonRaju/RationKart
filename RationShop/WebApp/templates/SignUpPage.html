@@ -114,7 +114,7 @@
         <p class="text-muted mb-4">Complete signup with all details</p>
     </div>
 
-    <form id="signup-form" class="form" method="post" action="{% url 'SignUp' %}">
+    <form id="signup-form" class="form" method="post" action="{% url 'SaveSignUp' %}">
         {% csrf_token %}
         <div class="mb-3">
             <div class="input-group">
@@ -132,7 +132,7 @@
         <div class="mb-3">
             <div class="input-group">
                 <input type="text" name="rationcard" class="form-control input-with-icon"
-                       placeholder="Ration Card Number">
+                       placeholder="Ration Card Number" required>
                 <div class="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                          class="bi bi-person" viewBox="0 0 16 16">
@@ -173,7 +173,8 @@
         </div>
         <div class="mb-3">
             <div class="input-group">
-                <input type="text" name="bmobile" class="form-control input-with-icon" placeholder="Mobile Number">
+                <input type="text" name="bmobile" class="form-control input-with-icon" placeholder="Mobile Number"
+                       id="mobile">
                 <div class="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                          class="bi bi-person" viewBox="0 0 16 16">
@@ -210,7 +211,19 @@
         </div>
         <div class="mb-4">
             <div class="input-group">
-                <input type="password" name="regnum" class="form-control input-with-icon" id="shopid"
+                <input type="password" name="cpass" class="form-control input-with-icon" id="cpass"
+                       placeholder="Confirm Password">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                         class="bi bi-lock" viewBox="0 0 16 16">
+                        <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        <div class="mb-4">
+            <div class="input-group">
+                <input type="text" name="regnum" class="form-control input-with-icon" id="shopid"
                        placeholder="Enter Shop Registration number">
                 <div class="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -246,9 +259,34 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    $(document).ready(function(){
+    document.getElementById('signup-form').addEventListener('submit', function (e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('cpass').value;
+        const mobile = document.getElementById('mobile').value;
 
-    })
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+        }
+        if (mobile.length != 10){
+            e.preventDefault();
+            alert('Invalid Mobile Number!');
+        }
+    });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% if messages %}
+<script>
+    {% for message in messages %}
+        Swal.fire({
+            title: '{{ message.tags|title }}',
+            text: '{{ message }}',
+            icon: '{{ message.tags }}',
+            confirmButtonText: 'OK'
+        });
+    {% endfor %}
+</script>
+{% endif %}
 </body>
 </html>

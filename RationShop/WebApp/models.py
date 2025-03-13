@@ -2,8 +2,6 @@ from django.db import models
 import uuid
 from django.db.models import Sum
 from django.contrib.auth.models import User
-from AdminApp.models import Stock, RationItems
-
 
 class ShopOwner(models.Model):
     user = models.OneToOneField(
@@ -20,6 +18,7 @@ class ShopOwner(models.Model):
     Taluk = models.CharField(max_length=100, null=True)
     Panchayat = models.CharField(max_length=100, null=True)
     Place = models.CharField(max_length=100, null=True)
+
 
     def __str__(self):
         return f'{self.Reg_Num}'
@@ -38,7 +37,9 @@ class BeneficiaryRegister(models.Model):
     U_Mobile = models.CharField(max_length=20)
     Family_Members = models.IntegerField(null=True)
     Shop_ID = models.CharField(max_length=100, null=True)
-    is_approved = models.BooleanField(default=False)  # New field to track approval status
+    is_approved = models.BooleanField(default=False)
+    C_Pass = models.CharField(max_length=100, null=True)
+    is_rejected = models.BooleanField(default=False)
 
     def __str__(self):
         return self.U_Name
@@ -90,10 +91,14 @@ class CartDB(models.Model):
         verbose_name = "Cart Item"
 
 
-class OrderDB(models.Model):  # Modified OrderDB model
+class OrderDB(models.Model):
     Order_Num = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    Shop = models.ForeignKey(ShopOwner, on_delete=models.CASCADE, related_name='orders',
-                             null=True)
+    Shop = models.ForeignKey(
+        ShopOwner,
+        on_delete=models.CASCADE,
+        related_name='orders',
+        null=True
+    )
     User_Name = models.CharField(max_length=100, null=True)
     Name = models.CharField(max_length=100)
     Email = models.EmailField()
@@ -101,7 +106,17 @@ class OrderDB(models.Model):  # Modified OrderDB model
     Mobile = models.CharField(max_length=20)
     Card_Num = models.CharField(max_length=100, null=True)
     Reg_Num = models.CharField(max_length=100, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    payment_method = models.CharField(
+        max_length=50,
+        choices=[('COD', 'Cash on Delivery'), ('Online', 'Online Payment')],
+        default='COD'
+    )
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
+    razorpay_order_id = models.CharField(max_length=100, null=True, blank=True)
+    payment_status = models.CharField(max_length=100,
+                                      choices=[('Pending', 'Pending'), ('Paid', 'Paid'), ('Failed', 'Failed')],
+                                      default='Pending', null=True, blank=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -110,6 +125,7 @@ class OrderDB(models.Model):  # Modified OrderDB model
     @property
     def total(self):
         return self.cart_items.aggregate(total=Sum('I_Total'))['total'] or 0
+
 
 
 class OrderStatus(models.Model):
@@ -126,7 +142,7 @@ class OrderStatus(models.Model):
         related_name='status'
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name_plural = "Order Statuses"
@@ -144,3 +160,4 @@ class Delivery(models.Model):
         related_name='delivery_partners'
     )
     D_Phone = models.CharField(max_length=20)
+    D_Pic = models.ImageField(upload_to="Delivery Partner", null=True, blank=True)

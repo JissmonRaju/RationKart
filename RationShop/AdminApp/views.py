@@ -1,10 +1,10 @@
 from django.contrib.auth import authenticate, login
 from django.core.files.storage import FileSystemStorage
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.datastructures import MultiValueDictKeyError
 from AdminApp.models import Stock, StockCategory,RationItems
 from django.contrib.auth.models import User
-from WebApp.models import ContactDB,BeneficiaryRegister,OrderDB
+from WebApp.models import ContactDB, BeneficiaryRegister, OrderDB, Delivery, ShopOwner
 
 
 # Create your views here.
@@ -19,9 +19,13 @@ def display_user(request):
     return render(request, 'Display_User.html', {'us_er': us_er})
 
 
-
 def delete_user(request, u_id):
-    del_usr = BeneficiaryRegister.objects.filter(id=u_id)
+    del_usr = get_object_or_404(BeneficiaryRegister, id=u_id)
+
+    if del_usr.user:  # Ensure there's an associated user
+        del_usr.user.delete()
+
+    # Delete the Beneficiary record
     del_usr.delete()
     return redirect(display_user)
 
@@ -221,3 +225,27 @@ def del_orders(request,o_id):
     return redirect(order_details)
 
 
+def view_delivery(request):
+    dp = Delivery.objects.all()
+    return render(request, 'DisplayDelivery.html', {'dp': dp})
+
+
+def del_partner(request, p_id):
+    delete_partner = Delivery.objects.filter(id=p_id).first()
+    if delete_partner and delete_partner.D_Partner:
+        delete_partner.D_Partner.delete()  # Delete the linked User
+    delete_partner.delete()  # Then delete the Delivery partner entry
+    return redirect(view_delivery)
+
+
+def view_shops(request):
+    sh = ShopOwner.objects.all()
+    return render(request, 'View_Owners.html', {'sh': sh})
+
+
+def del_shop(request, s_id):
+    delete_shp = ShopOwner.objects.filter(id=s_id).first()
+    if delete_shp and delete_shp.user:
+        delete_shp.user.delete()  # This deletes the associated User
+    delete_shp.delete()  # Then delete the ShopOwner entry
+    return redirect(view_shops)

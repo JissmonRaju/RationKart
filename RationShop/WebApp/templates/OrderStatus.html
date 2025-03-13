@@ -215,18 +215,18 @@
     <div class="header">
         <div class="container">
             <div class="row">
-                <div class="col-md-3 col-sm-3 col logo_section">
+                <div class="col-xl-3 col-lg-3 col-md-3 col-sm-3 col logo_section">
                     <div class="full">
                         <div class="center-desk">
                             <div class="logo">
                                 <a href="{% url 'Home' %}"><img src="{% static 'web/assets/images/Rationlogo.png' %}"
-                                                                style="width:300px;height:100px;"
+                                                                style="width:150px;height:100px;"
                                                                 alt="#"/></a>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-xl-9 col-lg-10 col-md-10 col-sm-9">
+                <div class="col-xl-9 col-lg-10 col-md-12 col-sm-9">
                     <nav class="navigation navbar navbar-expand-md navbar-dark ">
                         <button class="navbar-toggler" type="button" data-toggle="collapse"
                                 data-target="#navbarsExample04" aria-controls="navbarsExample04" aria-expanded="false"
@@ -239,17 +239,19 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'ShopHome' %}"> Home </a>
                                 </li>
-                                <li class="nav-item">
+                                <li class="nav-item active">
                                     <a class="nav-link" href="{% url 'Requests' %}"> Orders </a>
                                 </li>
-                                <li class="nav-item active">
+                                <li class="nav-item">
                                     <a class="nav-link" href="{% url 'ShopStock' %}">Stocks</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'CartPage' %}">Cart</a>
+                                    <a class="nav-link" href="{% url 'CartPage' %}" style="position:relative;">Cart
+                                        <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1"
+                                              style="top: -12px; left: 55px; height: 20px; min-width: 20px;">{{ x }}</span></a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'OrderPage' %}">Requests</a>
+                                    <a class="nav-link" href="{% url 'OrderPage' %}">Request</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>
@@ -268,6 +270,7 @@
                                     <a class="nav-link" href="{% url 'ContactUs' %}">Contact Us</a>
                                 </li>
                                 {% else %}
+
                                 <li class="nav-item">
                                     <a class="nav-link" href="{% url 'About' %}">About</a>
                                 </li>
@@ -276,23 +279,17 @@
                                 </li>
                                 {% endif %}
 
+
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" href="#" role="button"
                                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         <i class="bi bi-person-circle" style="font-size: 2rem;"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                                        {% if request.session.Ration_Card %}
-                                        <h2 style="text-align:center;">Hi,{{request.session.Ration_Card}}</h2>
+                                        {% if request.session.Reg_Num %}
+                                        <h2 style="text-align:center;">Hi, {{ request.session.Reg_Num }}</h2>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
-                                        <button class="dropdown-item">
-                                            <a href="{% url 'MyDetails' details.id %}">My Details</a>
-                                        </button>
-                                        <hr style="border: 2px solid black; margin: 20px 0;">
-                                        <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
-                                        {% elif request.session.Reg_Num %}
-                                        <h2 style="text-align:center;">Hi,{{request.session.Reg_Num}}</h2>
-                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        {% if shp and shp.id %}
                                         <button class="dropdown-item">
                                             <a href="{% url 'MyDetails' shp.id %}">My Details</a>
                                         </button>
@@ -300,15 +297,27 @@
                                             <a href="{% url 'PartnerDetails'%}">View Partner Details</a>
                                         </button>
                                         <hr style="border: 2px solid black; margin: 20px 0;">
+                                        {% endif %}
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
                                         {% elif request.session.delivery_partner %}
                                         <h2 style="text-align:center;">Hi,{{request.session.delivery_partner}}</h2>
-
                                         <hr style="border: 2px solid black; margin: 20px 0;">
+                                        <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
+                                        {% elif request.session.Ration_Card %}
+                                        <h2 style="text-align:center;">Hi, {{ request.session.Ration_Card }}</h2>
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        {% if beneficiary_details and beneficiary_details.id %}
+                                        <button class="dropdown-item">
+                                            <a href="{% url 'MyDetails' beneficiary_details.id %}">My Details</a>
+                                        </button>
+                                        <hr style="border: 2px solid black; margin: 20px 0;">
+                                        {% endif %}
                                         <a class="dropdown-item" href="{% url 'LogOut' %}">Logout</a>
                                         {% else %}
                                         <a class="dropdown-item" href="{% url 'LoginPage' %}">Login</a>
                                         {% endif %}
+
+
                                     </div>
                                 </li>
 
@@ -322,6 +331,24 @@
     </div>
 </header>
 
+<div class="mt-2 pt-3">
+    {% if request.session.Ration_Card %}
+    <a href="{% url 'Home' %}" class="back-link mb-4" style="margin-left:100px;">
+        <i class="bi bi-arrow-left"></i> Back to Home
+    </a>
+    {% elif request.session.Reg_Num %}
+    <a href="{% url 'ShopHome' %}" class="back-link mb-4" style="margin-left:100px;">
+        <i class="bi bi-arrow-left"></i> Back to Home
+    </a>
+    {% elif request.session.delivery_partner %}
+    <a href="{% url 'Delivery_Partner' %}" class="back-link mb-4" style="margin-left:100px;">
+        <i class="bi bi-arrow-left"></i> Back to Home
+    </a>
+    {% else %}
+    <a></a>
+    {% endif %}
+
+</div>
 
 <div class="container py-4">
 
@@ -377,40 +404,6 @@
             {% if request.session.Reg_Num %}
             <div></div>
             {% elif request.session.delivery_partner %}
-            <div class="section-title">
-                <i class="bi bi-truck"></i> Delivery Details
-            </div>
-            <div class="delivery-box">
-                <div class="status-update">
-                    <div class="status-label">Update Delivery Status</div>
-                    <form method="post" action="{% url 'OrderStatus' order.Order_Num %}">
-                        {% csrf_token %}
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                                    id="dropdownOrder" data-bs-toggle="dropdown"
-                                    aria-expanded="false">
-                                {{ order_status.get_status_display }} <span class="visually-hidden">Change status</span>
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="dropdownOrder">
-                                {% for choice_value, choice_display in order_status.STATUS_CHOICES %}
-                                <li>
-                                    <button class="dropdown-item" type="submit" name="status"
-                                            value="{{ choice_value }}">
-                                        {% if choice_value == 'pending' %}<i class="bi bi-hourglass me-2"></i>
-                                        {% endif %}
-                                        {% if choice_value == 'out_for_delivery' %}<i
-                                            class="bi bi-truck me-2"></i>{% endif %}
-                                        {% if choice_value == 'delivered' %}<i
-                                            class="bi bi-check-circle me-2"></i>{% endif %}
-                                        {{ choice_display }}
-                                    </button>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </form>
-                </div>
-            </div>
             {% else %}
             <div></div>
             {% endif %}
@@ -445,6 +438,8 @@
                 </a>
             </div>
         </div>
+
+
     </div>
 
 </div>
@@ -471,63 +466,50 @@
                 </div>
                 <div class="col-6 col-lg-2 offset-lg-1 mb-4">
                     <h4 style="color:white;" class="mb-4 border-bottom">Important Links</h4>
+                    {% if request.session.Reg_Num %}
                     <ul class="mb-4">
-                        <li class="mb-2"><a href="{% url 'Home' %}" style="color:white;">Home</a></li>
-                        <li class="mb-2"><a style="color:white;" href="{% url 'Products' %}">Assigned Rations</a></li>
+                        <li class="mb-2"><a href="{% url 'ShopHome' %}" style="color:white;">Home</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'ShopStock' %}">Products</a></li>
                         <li class="mb-2"><a style="color:white;" href="{% url 'About' %}">About Us</a></li>
                         <li class="mb-2"><a style="color:white;" href="{% url 'ContactUs' %}">Contact Us</a>
                         </li>
-                        <li class="mb-2"><a style="color:white;" href="https://themes.getbootstrap.com/">Cart</a></li>
-                        <li class="mb-2"><a style="color:white;" href="https://blog.getbootstrap.com/">Your Orders</a>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'CartPage' %}">Cart</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'OrderPage' %}">Your Orders</a>
                         </li>
 
                     </ul>
+                    {% elif request.session.Ration_Card %}
+                    <ul class="mb-4">
+                        <li class="mb-2"><a href="{% url 'Home' %}" style="color:white;">Home</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'Products' %}">Products</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'About' %}">About Us</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'ContactUs' %}">Contact Us</a>
+                        </li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'CartPage' %}">Cart</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'OrderPage' %}">Your Orders</a>
+                        </li>
+
+                    </ul>
+                    {% elif request.session.delivery_partner %}
+                    <ul class="mb-4">
+                        <li class="mb-2"><a href="{% url 'Delivery_Partner' %}" style="color:white;">Home</a></li>
+
+                        <li class="mb-2"><a style="color:white;" href="{% url 'About' %}">About Us</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'ContactUs' %}">Contact Us</a>
+                    </ul>
+                    {% else %}
+                    <ul></ul>
+                    {% endif %}
                 </div>
                 <div class="col-6 col-lg-2 mb-3">
                     <h4 style="color:white;" class="border-bottom mb-4">For Admins</h4>
-
                     <ul class="list-unstyled">
                         <li class="mb-2"><a style="color:white;" href="{% url 'AdminLoginPage' %}">Go To Admin
                             DashBoard</a></li>
 
-                        <li class="mb-2"><a href="/docs/5.3/examples/starter-template/">Starter template</a>
-                        </li>
-                        <li class="mb-2"><a href="/docs/5.3/getting-started/webpack/">Webpack</a></li>
-                        <li class="mb-2"><a href="/docs/5.3/getting-started/parcel/">Parcel</a></li>
-                        <li class="mb-2"><a href="/docs/5.3/getting-started/vite/">Vite</a></li>
                     </ul>
                 </div>
-                <div class="col-6 col-lg-2 mb-3">
-                    <h5>Projects</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap" target="_blank"
-                                            rel="noopener">Bootstrap 5</a></li>
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap/tree/v4-dev" target="_blank"
-                                            rel="noopener">Bootstrap 4</a></li>
-                        <li class="mb-2"><a href="https://github.com/twbs/icons" target="_blank"
-                                            rel="noopener">Icons</a>
-                        </li>
-                        <li class="mb-2"><a href="https://github.com/twbs/rfs" target="_blank" rel="noopener">RFS</a>
-                        </li>
-                        <li class="mb-2"><a href="https://github.com/twbs/examples/" target="_blank"
-                                            rel="noopener">Examples repo</a></li>
-                    </ul>
-                </div>
-                <div class="col-6 col-lg-2 mb-3">
-                    <h5>Community</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap/issues" target="_blank"
-                                            rel="noopener">Issues</a></li>
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap/discussions" target="_blank"
-                                            rel="noopener">Discussions</a></li>
-                        <li class="mb-2"><a href="https://github.com/sponsors/twbs" target="_blank"
-                                            rel="noopener">Corporate sponsors</a></li>
-                        <li class="mb-2"><a href="https://opencollective.com/bootstrap" target="_blank"
-                                            rel="noopener">Open Collective</a></li>
-                        <li class="mb-2"><a href="https://stackoverflow.com/questions/tagged/bootstrap-5"
-                                            target="_blank" rel="noopener">Stack Overflow</a></li>
-                    </ul>
-                </div>
+
             </div>
 
         </div>

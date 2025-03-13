@@ -136,27 +136,29 @@
 
 
 <div class="container py-5">
+
+    <a href="{% url 'Products' %}" class="back-link mb-4">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+
+
     <div class="row">
         <!-- Product Image -->
         <div class="col-lg-6 mb-4 mt-4 mb-lg-0">
             <div class="product-image-placeholder">
-                <img src="{{sing.R_Image.url}}" style="width:400px;height:500px;margin-top:200px;">
+                <img src="{{ sing.R_Image.url }}" style="width:400px;height:500px;margin-top:200px;">
             </div>
         </div>
 
         <!-- Product Details -->
         <div class="col-lg-6">
-            <h1 class="mb-3">{{sing.Ration}}</h1>
-
-            <!-- Rating -->
+            <h1 class="mb-3">{{ sing.Ration }}</h1>
 
             <!-- Price -->
-            <h2 class="mb-4">₹{{sing.R_Price}}/ kg</h2>
+            <h2 class="mb-4">₹{{ sing.R_Price }}/ kg</h2>
 
             <!-- Description -->
-            <p class="lead mb-4">
-                {{sing.R_Desc}}
-            </p>
+            <p class="lead mb-4">{{ sing.R_Desc }}</p>
 
             <!-- Features -->
             <div class="mb-4">
@@ -167,52 +169,49 @@
                     <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i> High nutritional value</li>
                 </ul>
             </div>
+
             <br>
-            <h5><b>Availabilty ? : {{sing.R_Avail}}</b></h5> <br>
+            <h5><b>Availability: {{ sing.R_Avail }}</b></h5>
+            <br>
 
             <form action="{% url 'Save_Cart' %}" method="post">
                 {% csrf_token %}
+                <input type="hidden" name="iname" value="{{ sing.Ration }}">
+                <input type="hidden" id="price" name="price" value="{{ sing.R_Price }}">
+                <input type="hidden" id="member" value="{{ prod.Family_Members }}">
+
+                <!-- Quantity and Total Price -->
                 <div class="mb-4">
                     <label class="form-label">Quantity (In Kg):</label>
                     <div class="input-group" style="max-width: 150px;">
-
-
-                        <input type="hidden" name="iname" value="{{ sing.Ration }}">
-                        <input type="hidden" id="price" name="price" value="{{ sing.R_Price }}">
-                        <input type="hidden" id="member" value="{{ prod.Family_Members }}">
-
-                        <!-- Read-only quantity field -->
                         <input
                                 name="quant"
                                 readonly
                                 id="quantity"
                                 type="number"
                                 class="form-control text-center"
-
                                 value="{{ final_quantity }}"
                         >
                     </div>
+
                     <label class="form-label mt-2">Total Price:</label>
                     <div class="input-group" style="max-width: 150px;">
-
-
-                        <!-- Read-only quantity field -->
-
-                        <!-- Hidden field for quantity to ensure it gets submitted -->
-
-                        <!-- Hidden total field (auto-updated via JS) -->
-
-
-                        <!-- Hidden field for quantity to ensure it gets submitted -->
-
-                        <!-- Hidden total field (auto-updated via JS) -->
-                        <input readonly type="text" class="form-control text-center" id="total" name="total"
-                               value="{{ sing.R_Price }}">
+                        <input
+                                readonly
+                                type="text"
+                                class="form-control text-center"
+                                id="total"
+                                name="total"
+                                value="{{ sing.R_Price }}"
+                        >
                     </div>
                 </div>
+
+                
+                <!-- Add to Cart button logic -->
                 {% if final_quantity == 0 %}
                 <button class="btn btn-danger w-100 py-3" disabled>
-                    <i class="fas fa-shopping-cart me-2"></i> Not Eligible for the Item
+                    <i class="fas fa-times-circle me-2"></i> Not Eligible for the Item
                 </button>
                 {% elif sing.R_Avail == 'Item Is Available' %}
                 {% if already_in_cart %}
@@ -225,14 +224,12 @@
                 </button>
                 {% endif %}
                 {% else %}
-                <button class="btn btn-danger" disabled style="width:200px;height:70px;">
-                    Item Not Available
+                <button class="btn btn-danger w-100 py-3" disabled>
+                    <i class="fas fa-times-circle me-2"></i> Item Not Available
                 </button>
                 {% endif %}
 
-
             </form>
-
 
         </div>
     </div>
@@ -261,63 +258,50 @@
                 </div>
                 <div class="col-6 col-lg-2 offset-lg-1 mb-4">
                     <h4 style="color:white;" class="mb-4 border-bottom">Important Links</h4>
+                    {% if request.session.Reg_Num %}
                     <ul class="mb-4">
-                        <li class="mb-2"><a href="{% url 'Home' %}" style="color:white;">Home</a></li>
-                        <li class="mb-2"><a style="color:white;" href="{% url 'Products' %}">Assigned Rations</a></li>
+                        <li class="mb-2"><a href="{% url 'ShopHome' %}" style="color:white;">Home</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'ShopStock' %}">Products</a></li>
                         <li class="mb-2"><a style="color:white;" href="{% url 'About' %}">About Us</a></li>
                         <li class="mb-2"><a style="color:white;" href="{% url 'ContactUs' %}">Contact Us</a>
                         </li>
-                        <li class="mb-2"><a style="color:white;" href="https://themes.getbootstrap.com/">Cart</a></li>
-                        <li class="mb-2"><a style="color:white;" href="https://blog.getbootstrap.com/">Your Orders</a>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'CartPage' %}">Cart</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'OrderPage' %}">Your Orders</a>
                         </li>
 
                     </ul>
+                    {% elif request.session.Ration_Card %}
+                    <ul class="mb-4">
+                        <li class="mb-2"><a href="{% url 'Home' %}" style="color:white;">Home</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'Products' %}">Products</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'About' %}">About Us</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'ContactUs' %}">Contact Us</a>
+                        </li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'CartPage' %}">Cart</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'OrderPage' %}">Your Orders</a>
+                        </li>
+
+                    </ul>
+                    {% elif request.session.delivery_partner %}
+                    <ul class="mb-4">
+                        <li class="mb-2"><a href="{% url 'Delivery_Partner' %}" style="color:white;">Home</a></li>
+
+                        <li class="mb-2"><a style="color:white;" href="{% url 'About' %}">About Us</a></li>
+                        <li class="mb-2"><a style="color:white;" href="{% url 'ContactUs' %}">Contact Us</a>
+                    </ul>
+                    {% else %}
+                    <ul></ul>
+                    {% endif %}
                 </div>
                 <div class="col-6 col-lg-2 mb-3">
                     <h4 style="color:white;" class="border-bottom mb-4">For Admins</h4>
-
                     <ul class="list-unstyled">
                         <li class="mb-2"><a style="color:white;" href="{% url 'AdminLoginPage' %}">Go To Admin
                             DashBoard</a></li>
 
-                        <li class="mb-2"><a href="/docs/5.3/examples/starter-template/">Starter template</a>
-                        </li>
-                        <li class="mb-2"><a href="/docs/5.3/getting-started/webpack/">Webpack</a></li>
-                        <li class="mb-2"><a href="/docs/5.3/getting-started/parcel/">Parcel</a></li>
-                        <li class="mb-2"><a href="/docs/5.3/getting-started/vite/">Vite</a></li>
                     </ul>
                 </div>
-                <div class="col-6 col-lg-2 mb-3">
-                    <h5>Projects</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap" target="_blank"
-                                            rel="noopener">Bootstrap 5</a></li>
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap/tree/v4-dev" target="_blank"
-                                            rel="noopener">Bootstrap 4</a></li>
-                        <li class="mb-2"><a href="https://github.com/twbs/icons" target="_blank"
-                                            rel="noopener">Icons</a>
-                        </li>
-                        <li class="mb-2"><a href="https://github.com/twbs/rfs" target="_blank" rel="noopener">RFS</a>
-                        </li>
-                        <li class="mb-2"><a href="https://github.com/twbs/examples/" target="_blank"
-                                            rel="noopener">Examples repo</a></li>
-                    </ul>
-                </div>
-                <div class="col-6 col-lg-2 mb-3">
-                    <h5>Community</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap/issues" target="_blank"
-                                            rel="noopener">Issues</a></li>
-                        <li class="mb-2"><a href="https://github.com/twbs/bootstrap/discussions" target="_blank"
-                                            rel="noopener">Discussions</a></li>
-                        <li class="mb-2"><a href="https://github.com/sponsors/twbs" target="_blank"
-                                            rel="noopener">Corporate sponsors</a></li>
-                        <li class="mb-2"><a href="https://opencollective.com/bootstrap" target="_blank"
-                                            rel="noopener">Open Collective</a></li>
-                        <li class="mb-2"><a href="https://stackoverflow.com/questions/tagged/bootstrap-5"
-                                            target="_blank" rel="noopener">Stack Overflow</a></li>
-                    </ul>
-                </div>
+
             </div>
 
         </div>
@@ -366,6 +350,22 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
         crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% if messages %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    {% for message in messages %}
+        Swal.fire({
+            title: '{{ message.tags|title }}',
+            text: '{{ message }}',
+            icon: '{{ message.tags }}',
+            confirmButtonText: 'OK',
+            backdrop: true
+        });
+    {% endfor %}
+     });
+</script>
+{% endif %}
 
 </body>
 </html>

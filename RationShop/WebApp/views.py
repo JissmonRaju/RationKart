@@ -3,7 +3,11 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect, get_object_or_404, reverse
 from django.db.models import Sum
 from django.db.models import Prefetch
+from django.shortcuts import get_object_or_404
 from .decorators import approval_required
+import json
+from django.utils.timezone import now
+from django.db.models import Q
 from AdminApp.models import Stock, RationItems
 from WebApp.models import BeneficiaryRegister, ContactDB, CartDB, ShopOwner, OrderDB, OrderStatus, Delivery
 from django.contrib import messages
@@ -11,13 +15,27 @@ from django.db import IntegrityError
 import AdminApp.models
 import razorpay
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponseForbidden
+from django.http import JsonResponse
+from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db import IntegrityError
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.urls import reverse
+from WebApp.models import BeneficiaryRegister, ShopOwner
+from django.contrib.auth.models import User
+
 
 
 # Create your views here.
 
 def home(request):
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
-    cart_count = CartDB.objects.filter(User_Name=request.session['Ration_Card'], order__isnull=True)
+    cart_count = CartDB.objects.filter(User_Name=request.session.get('Ration_Card'), order__isnull=True)
     x = cart_count.count()
     stks = Stock.objects.all()
     dev = Delivery.objects.all()
@@ -34,35 +52,17 @@ def products(request):
 
 
 def shop_home(request):
-    det = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
-    cart_count = CartDB.objects.filter(User_Name=request.session['Reg_Num'], order__isnull=True)
+    reg_num = request.session.get('Reg_Num')
+    det = ShopOwner.objects.filter(Reg_Num=reg_num).first()
+    cart_count = CartDB.objects.filter(User_Name=reg_num, order__isnull=True)
     x = cart_count.count()
     return render(request, 'ShopHome.html', {'det': det, 'x': x})
 
 
-@approval_required
-def dashboard(request):
-    return render(request, 'Dashboard.html')
-
-
-@login_required
-def pending_requests(request):
-    # Ensure only shop owners see their pending requests
-    if hasattr(request.user, 'shopowner_profile'):
-        shop_id = request.user.shopowner_profile.Reg_Num
-        pending_beneficiaries = BeneficiaryRegister.objects.filter(Shop_ID=shop_id, is_approved=False)
-        return render(request, 'PendingRequests.html', {'pending_beneficiaries': pending_beneficiaries})
-
-    return redirect('dashboard')
-
-
-def approve_request(request):
-    return render(request, 'ApproveRequest.html')
-
+# --- Beneficiary Side ---
 
 def signup_page(request):
     return render(request, 'SignUpPage.html')
-
 
 def save_signup(request):
     if request.method == 'POST':
@@ -74,12 +74,13 @@ def save_signup(request):
         u_pass = request.POST.get('bpass')
         fam_members = request.POST.get('members')
         shp_id = request.POST.get('regnum')
+        c_pass = request.POST.get('cpass')
+        print("Shop ID received:", shp_id)  # Debug check
 
         try:
-            # Create Django user (Ration Card as username)
+            # Create user (using ration card as username)
             user = User.objects.create_user(username=ration_card, password=u_pass)
-
-            # Create pending BeneficiaryRegister
+            # Create beneficiary record with is_approved=False
             BeneficiaryRegister.objects.create(
                 user=user,
                 U_Name=u_name,
@@ -89,17 +90,152 @@ def save_signup(request):
                 U_Mobile=u_mobile,
                 Family_Members=fam_members,
                 Shop_ID=shp_id,
-                is_approved=False  # Pending approval
+                C_Pass=c_pass,
+                is_approved=False
             )
-
-            messages.success(request, "Signup request submitted! Waiting for shop owner's approval.")
-            return redirect('Dashboard')
-
+            messages.success(request, "Signup submitted! Your account is pending approval.")
+            login(request, user)
+            return redirect('PendingApproval')
         except IntegrityError:
+
+            print(BeneficiaryRegister.objects.filter(Shop_ID='YOUR_RATION_CARD_NUMBER').exists())
             messages.error(request, "Ration Card number already exists.")
             return redirect('SignUpPage')
 
     return redirect('SignUpPage')
+
+
+def pending_approval(request):
+    """
+    Page shown to beneficiaries after signup, informing them their account is pending.
+    """
+    return render(request, 'PendingApproval.html')
+
+
+# --- Shop Owner Side ---
+
+@login_required
+def pending_requests(request):
+    """
+    View for shop owners to see pending beneficiary signups for their shop.
+    """
+    if hasattr(request.user, 'shopowner_profile'):
+        shop_id = request.user.shopowner_profile.Reg_Num
+        pending_beneficiaries = BeneficiaryRegister.objects.filter(
+            Shop_ID=shop_id, is_approved=False
+        )
+        # Debug logs:
+        print("Logged-in ShopOwner Reg_Num:", shop_id)
+        print("Pending Beneficiaries:", pending_beneficiaries)
+        return render(request, 'ApproveRequest.html', {
+            'pending_beneficiaries': pending_beneficiaries
+        })
+    return redirect('PendingApproval')
+
+
+@csrf_exempt
+@login_required
+def approve_beneficiary(request, beneficiary_id):
+    """
+    Process shop owner’s approval for a beneficiary and redirect them to the approve requests page.
+    """
+    if request.method == 'POST' and hasattr(request.user, 'shopowner_profile'):
+        beneficiary = BeneficiaryRegister.objects.filter(
+            id=beneficiary_id, is_approved=False
+        ).first()
+
+        if beneficiary and beneficiary.Shop_ID == request.user.shopowner_profile.Reg_Num:
+            beneficiary.is_approved = True
+            beneficiary.save()
+            # Store approval status in session for customer to check (if needed)
+            request.session['approved_beneficiary_id'] = beneficiary.id
+
+            messages.success(request, f"{beneficiary.U_Name} has been approved.")
+            return redirect('ApproveRequests')
+
+    return redirect('ApproveRequests')
+
+
+def check_approval_status(request):
+    print("DEBUG: check_approval_status for user:", request.user.username)
+    if request.user.is_authenticated and hasattr(request.user, 'beneficiary_profile'):
+        beneficiary = request.user.beneficiary_profile
+        print("DEBUG: beneficiary.id =", beneficiary.id, "approved =", beneficiary.is_approved)
+        if beneficiary.is_approved:
+            return JsonResponse({'is_approved': True, 'beneficiary_id': beneficiary.id})
+    return JsonResponse({'is_approved': False})
+
+
+@csrf_exempt
+@login_required
+def reject_beneficiary(request, beneficiary_id):
+    """
+    Process rejection of a beneficiary signup.
+    """
+    if request.method == 'POST' and hasattr(request.user, 'shopowner_profile'):
+        beneficiary = BeneficiaryRegister.objects.filter(
+            id=beneficiary_id, is_approved=False
+        ).first()
+        if beneficiary and beneficiary.Shop_ID == request.user.shopowner_profile.Reg_Num:
+            beneficiary.delete()
+            messages.success(request, f"{beneficiary.U_Name}'s request has been rejected.")
+    return redirect('ApproveRequests')
+
+
+def final_status(request, beneficiary_id):
+    beneficiary = get_object_or_404(BeneficiaryRegister, id=beneficiary_id)
+    # Decide the status based on beneficiary.is_approved (for now, if not approved, we assume rejected)
+    status = "approved" if beneficiary.is_approved else "rejected"
+    return render(request, 'Approved.html', {
+        'beneficiary': beneficiary,
+        'status': status,
+    })
+
+
+# --- Login ---
+
+def login_page(request):
+    return render(request, 'LoginPage.html')
+
+
+def save_login(request):
+    if request.method == 'POST':
+        uname_e = request.POST.get('uname')
+        pass_words = request.POST.get('pass')
+        user = authenticate(username=uname_e, password=pass_words)
+
+        if user is not None:
+            print("DEBUG: Logging in user:", user.username)
+            # For beneficiaries, allow login even if not approved,
+            # but then redirect them to the pending approval page.
+            if hasattr(user, 'beneficiary_profile'):
+                shop_owner = ShopOwner.objects.filter(Reg_Num=user.beneficiary_profile.Shop_ID).first()
+                print("DEBUG: Setting session Ration_Card:", user.beneficiary_profile.Ration_Card)
+                request.session['Ration_Card'] = user.beneficiary_profile.Ration_Card
+                login(request, user)
+                if not user.beneficiary_profile.is_approved:
+                    messages.info(request, "Your account is pending approval. Please wait.")
+                    return redirect('PendingApproval')
+                else:
+                    messages.success(request, "Login Success")
+                    # If approved, redirect to final status page.
+                    return redirect('Home')
+
+            # For shop owners and other roles:
+            login(request, user)
+            if hasattr(user, 'delivery_profile'):
+                request.session['delivery_partner'] = user.username
+                messages.success(request, "Login Success")
+                return redirect('Delivery_Partner')
+            if hasattr(user, 'shopowner_profile'):
+                request.session['Reg_Num'] = user.shopowner_profile.Reg_Num
+                messages.success(request, "Login Success")
+                return redirect('ShopHome')
+
+        messages.error(request, "Invalid credentials")
+        return redirect('LoginPage')
+    return redirect('LoginPage')
+
 
 
 def shop_signup(request):
@@ -116,81 +252,43 @@ def shop_signup(request):
         location = request.POST.get('place')
 
         try:
-            # 1. Create Django User object, set username to Reg_Num
-            user = User.objects.create_user(username=reg_num, password=s_pass)  # Use reg_num as username
-
-            # 2. Create ShopOwner profile, linked to the User
-            shop_owner = ShopOwner.objects.create(
-                user=user,  # Link to User object
+            user = User.objects.create_user(username=reg_num, password=s_pass)
+            ShopOwner.objects.create(
+                user=user,
                 S_Name=s_name,
-                Reg_Num=reg_num,  # Store Reg_Num in profile as well
+                Reg_Num=reg_num,
                 S_Mail=s_mail,
                 S_Mobile=s_mobile,
                 State=state,
-                District=dist, Taluk=taluk,
+                District=dist,
+                Taluk=taluk,
                 Panchayat=panch,
                 Place=location
             )
             messages.success(request, "Shop Owner registration successful! Please login.")
-            return redirect('LoginPage')  # Redirect to login page
-
-        except IntegrityError:  # Catch username (Reg_Num) already exists error
+            return redirect('LoginPage')
+        except IntegrityError:
             messages.error(request, "Registration Number already exists.")
-            return redirect('ShopSignUpPage')  # Redirect back to signup page (update template name if needed)
-
-    return redirect('ShopSignUpPage')
-
-
-def login_page(request):
-    return render(request, 'LoginPage.html')
+            return redirect('Shop')
+    return redirect('Shop')
 
 
-def save_login(request):
-    if request.method == 'POST':
-        uname_e = request.POST.get('uname')
-        pass_words = request.POST.get('pass')
-        user = authenticate(username=uname_e, password=pass_words)  # Authenticate using Django auth
-
-        if user is not None:  # Authentication successful
-            login(request, user)  # Use Django's login
-
-            # Clear session data (Session Isolation)
-            request.session.pop('Reg_Num', None)
-            request.session.pop('delivery_partner', None)
-            request.session.pop('Ration_Card', None)
-
-            if user.is_superuser:
-                return redirect('Index')  # Superuser
-
-            if hasattr(user, 'delivery_profile'):  # Check for Delivery Partner profile
-                request.session['delivery_partner'] = user.username
-                return redirect('Delivery_Partner')
-
-            if hasattr(user, 'beneficiary_profile'):  # Check for Beneficiary profile
-                beneficiary = user.beneficiary_profile  # Access BeneficiaryRegister via related_name
-                request.session['Ration_Card'] = beneficiary.Ration_Card  # Store Ration_Card from related profile
-                return redirect('Home')
-
-            if hasattr(user, 'shopowner_profile'):  # Check for ShopOwner profile
-                shopowner = user.shopowner_profile  # Access ShopOwner via related_name
-                request.session['Reg_Num'] = shopowner.Reg_Num  # Store Reg_Num from related profile
-                return redirect(reverse('ShopHome'))
-
-        messages.error(request, "Invalid credentials")  # Error message for failed login
-        return redirect('LoginPage')  # Redirect to login page
-
-    return redirect('LoginPage')
-
+def approve_request(request):
+    return render(request, 'ApproveRequest.html')
 
 def log_out(request):
     if request.session.get('Ration_Card'):
         request.session.pop('Ration_Card', None)
         request.session.pop('U_Pass', None)
-
+        messages.info(request, "Logged Out Successfully")
     elif request.session.get('Reg_Num'):
         request.session.pop('Reg_Num', None)
         request.session.pop('S_Pass', None)
-
+        messages.info(request, "Logged Out Successfully")
+    elif request.session.get('delivery_partner'):
+        request.session.pop('delivery_partner', None)
+        request.session.pop('password', None)
+        messages.info(request, "Logged Out Successfully")
     return redirect(login_page)
 
 
@@ -211,7 +309,8 @@ def save_contact(request):
         mess_age = request.POST.get('mesg')
         obj = ContactDB(F_Name=n_ame, C_Mail=e_mail, Phn_Num=phn_num, Mesg=mess_age)
         obj.save()
-        return redirect(home)
+        messages.success(request, "Your Message Sent Successfully")
+        return redirect(contact_us)
 
 
 def about_page(request):
@@ -224,196 +323,193 @@ def about_page(request):
 
 
 def single_product(request, si_id):
-    details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
+    # Get beneficiary details using Ration_Card from session
+    ration_card = request.session.get('Ration_Card')
+    prod = BeneficiaryRegister.objects.filter(Ration_Card=ration_card).first()
 
+    # Fetch product details
     sing = RationItems.objects.get(id=si_id)
 
-    # Get beneficiary details
-    prod = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
-    family_members = prod.Family_Members if (prod and prod.Family_Members) else 1
+    # Check if the selected product is ATTA
+    is_atta = sing.Ration.lower() == "atta"
 
-    # Check if item is already in the cart
-    user_cart = CartDB.objects.filter(User_Name=request.session.get('Ration_Card'), Item_Name=sing).exists()
-    already_in_cart = user_cart  # Pass this to the template
+    # Default atta quantity
+    atta_quantity = 0
 
-    # For Yellow card, the allocation is fixed for the household (not per person)
-    if prod:
-        if prod.Card_Color == "Yellow":
-            # Yellow card: amounts per card (not per person)
-            mapping = {
-                "White Rice": 9,
-                "Boiled Rice": 15,
-                "Raw Rice": 6,
-                "Wheat": 5,
-            }
-            final_quantity = mapping.get(sing.Ration, 35)  # default 35 if not found
+    # ATTA allocation based on card color
+    if prod and is_atta:
+        card_color = prod.Card_Color.lower()
+        atta_allocations = {"yellow": 3, "pink": 2}
+        atta_quantity = atta_allocations.get(card_color, 0)
 
-        elif prod.Card_Color == "White":
-            # White card: amounts per card (no Wheat allocated)
-            mapping = {
-                "White Rice": 2,
-                "Boiled Rice": 3,
-                "Raw Rice": 1,
-            }
-            # If Wheat is requested, you might want to explicitly set it to 0
-            final_quantity = mapping.get(sing.Ration, 0)
+    # Check if item is already in the cart (excluding ordered items)
+    cart_item = CartDB.objects.filter(User_Name=ration_card, ration_item=sing, order__isnull=True).first()
+    already_in_cart = bool(cart_item)
 
-        elif prod.Card_Color == "Pink":
-            # Pink card: allocation per person
-            mapping = {
-                "White Rice": 1,
-                "Boiled Rice": 2,
-                "Raw Rice": 0.5,
-                "Wheat": 0.5,
-            }
-            # Multiply the per-person allocation by the number of family members
-            final_quantity = mapping.get(sing.Ration, 0) * family_members
+    # Family members count (default to 1 if not found)
+    family_members = prod.Family_Members if prod and prod.Family_Members else 1
 
-        elif prod.Card_Color == "Blue":
-            # Blue card: allocation per person
-            mapping = {
-                "White Rice": 0.5,
-                "Boiled Rice": 1,
-                "Raw Rice": 0.5,
-            }
-            final_quantity = mapping.get(sing.Ration, 0) * family_members
+    # Quantity allocations by card color (excluding ATTA)
+    card_allocations = {
+        "yellow": {"White Rice": 9, "Boiled Rice": 15, "Raw Rice": 6, "Wheat": 5},
+        "white": {"White Rice": 2, "Boiled Rice": 3, "Raw Rice": 1},
+        "pink": {"White Rice": 1, "Boiled Rice": 2, "Raw Rice": 0.5, "Wheat": 0.5},
+        "blue": {"White Rice": 0.5, "Boiled Rice": 1, "Raw Rice": 0.5},
+    }
 
-        else:
-            # Default/fallback case if card color is not recognized.
-            product_defaults = {
-                "Wheat": 1,
-                "Boiled Rice": 1,
-                "Matta Rice": 1,
-                "Raw Rice": 1,
-            }
-            default_quantity = product_defaults.get(sing.Ration, 1)
-            final_quantity = default_quantity * family_members
+    # Calculate final quantity (skip ATTA)
+    if prod and not is_atta:
+        card_color = prod.Card_Color.lower()
+        allocation = card_allocations.get(card_color, {})
+        base_quantity = allocation.get(sing.Ration, 0)
+        final_quantity = base_quantity if card_color in ["yellow", "white"] else base_quantity * family_members
+    else:
+        final_quantity = 0 if is_atta else 1 * family_members
 
-    usr_name = request.session.get('Ration_Card')
-    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
-    x = cart_count.count()
+    # Get active cart count
+    cart_count = CartDB.objects.filter(User_Name=ration_card, order__isnull=True).count()
+
     return render(request, 'SingleProduct.html', {
         'sing': sing,
         'prod': prod,
         'final_quantity': final_quantity,
         'already_in_cart': already_in_cart,
-        'details': details,
-        'x': x
+        'details': prod,
+        'x': cart_count,
+        'atta_quantity': atta_quantity,
+        'is_atta': is_atta
     })
 
 
 def cart_page(request):
+    user_identifier = request.session.get('Ration_Card') or request.session.get('Reg_Num')
+    current_month = now().month
+    current_year = now().year
+
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
     shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
-    # Get user identifier
 
     if details:
-        crt = CartDB.objects.filter(User_Name=request.session['Ration_Card'],
-                                    order__isnull=True)  # UPDATED - added order__isnull=True
+        # Get all cart items not linked to an order
+        crt = CartDB.objects.filter(User_Name=user_identifier, order__isnull=True)
+
+        # Get items already ordered this month
+        monthly_orders = OrderDB.objects.filter(
+            User_Name=user_identifier,
+            created_at__year=current_year,
+            created_at__month=current_month
+        )
+        ordered_items = list(CartDB.objects.filter(order__in=monthly_orders).values_list('Item_Name', flat=True))
+
+        # Remove already purchased items from the cart
+        crt = crt.exclude(Item_Name__in=ordered_items)
+
     elif shp:
-        crt = CartDB.objects.filter(User_Name=request.session['Reg_Num'],
-                                    order__isnull=True)  # UPDATED - added order__isnull=True
+        crt = CartDB.objects.filter(User_Name=user_identifier, order__isnull=True)
+        ordered_items = []  # No restrictions for shop owners
     else:
-        crt = None
+        crt = CartDB.objects.none()
+        ordered_items = []
 
-    # Calculate total_price based on *current cart items* (crt) - CORRECTED CALCULATION
     total_price = crt.aggregate(Sum('I_Total'))['I_Total__sum'] or 0
-    quant = 0
-    for i in crt:  # Iterate over *crt*, not the unfiltered 'ord'
-        quant += i.Item_Quantity
-
-    item_count = crt.count()  # item_count should also be based on *crt*
-    usr_name = request.session.get('Reg_Num') or request.session.get('Ration_Card')
+    quant = sum(item.Item_Quantity for item in crt)
+    item_count = crt.count()
+    usr_name = user_identifier
     cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
     x = cart_count.count()
-    return render(request, 'CartPage.html',
-                  {'crt': crt, 'details': details, 'shp': shp, 'total_price': total_price, 'item_count': item_count,
-                   'quant': quant, 'x': x})
+
+    return render(request, 'CartPage.html', {
+        'crt': crt,
+        'details': details,
+        'shp': shp,
+        'total_price': total_price,
+        'item_count': item_count,
+        'quant': quant,
+        'x': x,
+        'ordered_items': ordered_items,  # ✅ Pass purchased items to template
+    })
+
 
 
 def save_cart(request):
-    print("DEBUG: save_cart view function is STARTING!")  # Function start debug
-    print(f"DEBUG: Request method: {request.method}")  # Print request method
+    print("DEBUG: save_cart view function is STARTING!")
+    print(f"DEBUG: Request method: {request.method}")
+    print(f"DEBUG: POST data received: {request.POST}")
 
-    if request.method == 'POST':
-        print("DEBUG: Request is POST, proceeding to process cart item...")  # POST request confirmed
+    if request.method != 'POST':
+        return redirect(shop_stock if request.session.get('Reg_Num') else products)
 
-        print("DEBUG: request.POST data:")  # Print the entire request.POST dictionary
-        for key, value in request.POST.items():
-            print(f"  - {key}: {value}")
+    user_identifier = request.session.get('Reg_Num') or request.session.get('Ration_Card')
+    current_month = now().month
+    current_year = now().year
 
-        user_identifier = request.session.get('Reg_Num') or request.session.get('Ration_Card')
-        if request.session.get('Reg_Num'):  # Shop Owner is adding to cart
-            i_name = request.POST.get('rname')
-            usr_name = request.session.get('Reg_Num')
-            i_price = request.POST.get('rprice')
-            i_quant = request.POST.get('rquant')
-            i_total = request.POST.get('rtotal')
-            img = None
+    try:
+        i_name = request.POST.get('iname', '').strip()
+        i_price = float(request.POST.get('price', 0))
+        i_quant = int(request.POST.get('quant', 0))
+        i_total = float(request.POST.get('total', 0))
+    except ValueError:
+        print("DEBUG: Invalid data format received.")
+        messages.error(request, "Invalid data received. Please try again.")
+        return redirect(shop_stock if request.session.get('Reg_Num') else products)
 
-            try:
-                stock_item_obj = AdminApp.models.Stock.objects.get(Item=i_name)
-                img = stock_item_obj.Item_Image
-            except AdminApp.models.Stock.DoesNotExist:
-                pass
+    if i_quant <= 0 or i_price < 0:
+        print("DEBUG: Invalid quantity or price.")
+        messages.error(request, "Invalid quantity or price.")
+        return redirect(shop_stock if request.session.get('Reg_Num') else products)
 
-            obj = CartDB(
-                User_Name=usr_name,
-                stock_item=stock_item_obj,
-                Item_Name=i_name,
-                Item_Quantity=int(i_quant),
-                I_Price=i_price,
-                I_Total=i_total,
-                Item_Image=img,
-            )
-            obj.save()
-            print(
-                f"DEBUG: CartDB object SAVED for Shop Owner. Item Name: {i_name}, Quantity: {i_quant}")  # CartDB save debug - Shop Owner
-
-        elif request.session.get('Ration_Card'):  # Beneficiary is adding to cart
-            i_name = request.POST.get('iname')
-            usr_name = request.session.get('Ration_Card')
-            i_price = request.POST.get('price')
-            i_quant = request.POST.get('quant')
-            i_total = request.POST.get('total')
-            img = None
-
-            try:
-                ration_item_obj = AdminApp.models.RationItems.objects.get(Ration=i_name)
-                img = ration_item_obj.R_Image
-            except AdminApp.models.RationItems.DoesNotExist:
-                pass
-
-            obj = CartDB(
-                User_Name=usr_name,
-                ration_item=ration_item_obj,
-                Item_Name=i_name,
-                Item_Quantity=int(i_quant),
-                I_Price=i_price,
-                I_Total=i_total,
-                Item_Image=img,
-            )
-            obj.save()
-            print(
-                f"DEBUG: CartDB object SAVED for Beneficiary. Item Name: {i_name}, Quantity: {i_quant}")  # CartDB save debug - Beneficiary
-        else:
-            print(
-                "DEBUG: No user session (Reg_Num or Ration_Card).  This should not happen in POST request.")  # User session missing debug - should not happen in POST
-
-        if request.session.get('Reg_Num'):
-            return redirect(shop_stock)
-        elif request.session.get('Ration_Card'):
+    if request.session.get('Ration_Card'):
+        try:
+            ration_item = RationItems.objects.get(Ration=i_name)
+        except RationItems.DoesNotExist:
+            messages.error(request, "Item not found.")
             return redirect(products)
+
+        if i_name != "ATTA":
+            monthly_orders = OrderDB.objects.filter(
+                User_Name=user_identifier,
+                created_at__year=current_year,
+                created_at__month=current_month
+            )
+            ordered_items = CartDB.objects.filter(order__in=monthly_orders).values_list('Item_Name', flat=True)
+
+            if i_name in ordered_items:
+                messages.error(request, "You have already purchased this item this month.")
+                return redirect(products)
+
+        CartDB.objects.create(
+            User_Name=user_identifier,
+            ration_item=ration_item,
+            Item_Name=i_name,
+            Item_Quantity=i_quant,
+            I_Price=i_price,
+            I_Total=i_total,
+            Item_Image=ration_item.R_Image
+        )
+        messages.success(request, "Item added to cart.")
     else:
-        print("DEBUG: Request is NOT POST. Redirecting based on user session...")  # Non-POST redirect debug
-        if request.session.get('Reg_Num'):
-            return redirect(shop_stock)  # Redirect Shop Owner on non-POST
-        elif request.session.get('Ration_Card'):
-            return redirect(products)  # Redirect Beneficiary on non-POST
-        else:
-            print(
-                "DEBUG: No user session in non-POST request. Redirecting to Home.")  # No user session debug - non-POST
-            return redirect(home)  # Default redirect to home if no session in non-POST
+        try:
+            stock_item = Stock.objects.get(Item=i_name)
+        except Stock.DoesNotExist:
+            messages.error(request, "Stock item not found.")
+            return redirect(shop_stock)
+
+        CartDB.objects.create(
+            User_Name=user_identifier,
+            stock_item=stock_item,
+            Item_Name=i_name,
+            Item_Quantity=i_quant,
+            I_Price=i_price,
+            I_Total=i_total,
+            Item_Image=stock_item.Item_Image
+        )
+        messages.success(request, "Item added to cart.")
+
+    return redirect(shop_stock if request.session.get('Reg_Num') else products)
+
+
+
+
 
 
 def delete_cart(request, crt_id):
@@ -424,6 +520,7 @@ def delete_cart(request, crt_id):
         User_Name=user_identifier,  # Ensure it's the current user's cart item
         order__isnull=True  # <---- Crucial: Only delete if NOT associated with an order
     )
+    messages.warning(request, "Deleted From Cart")
 
     if del_cart.exists():  # Check if the cart item to delete exists based on filters
         del_cart.delete()
@@ -455,7 +552,7 @@ def checkout_page(request):
     usr_cust = request.session.get('Ration_Card')
     user_identifier = usr_cust or shp_ownr  # Pick whichever session value is set
 
-    # Determine which cart items to pass as 'chk' - CORRECTED QUERY (already done previously)
+
     if shp_ownr:
         chk = CartDB.objects.filter(User_Name=shp_ownr, order__isnull=True)  # ADDED order__isnull=True (Correct)
     elif usr_cust:
@@ -546,90 +643,97 @@ def order_page(request):
     })
 
 
+
 def save_checkout(request):
-    print("DEBUG: save_checkout view function is STARTING!")
+    if request.method != 'POST':
+        return redirect('Home')
 
-    if request.method == 'POST':
-        user_identifier = request.session.get('Ration_Card') or request.session.get('Reg_Num')
+    user_identifier = request.session.get('Ration_Card') or request.session.get('Reg_Num')
+    if not user_identifier:
+        print("DEBUG: NO user_identifier found. Redirecting to login.")
+        return redirect('login')
 
-        if not user_identifier:
-            print("DEBUG: NO user_identifier found. Redirecting to login.")
-            return redirect('login')
-        usr_name = request.session.get('Reg_Num') or request.session.get('Ration_Card')
-        cart_items_for_order = CartDB.objects.filter(User_Name=user_identifier, order__isnull=True)
+    # Get cart items for the user
+    cart_items_for_order = CartDB.objects.filter(User_Name=user_identifier, order__isnull=True)
+    if not cart_items_for_order.exists():
+        print("DEBUG: Cart is EMPTY. Redirecting to CartPage.")
+        return redirect('CartPage')
 
-        if not cart_items_for_order.exists():
-            print("DEBUG: Cart is EMPTY. Redirecting to CartPage.")
-            return redirect('CartPage')
+    shop_reg_num = None
+    if request.session.get('Ration_Card'):
+        beneficiary = BeneficiaryRegister.objects.filter(Ration_Card=request.session['Ration_Card']).first()
+        if beneficiary:
+            shop_reg_num = beneficiary.Shop_ID
+    elif request.session.get('Reg_Num'):
+        shop_reg_num = request.session['Reg_Num']
 
+    shop_owner = ShopOwner.objects.filter(Reg_Num=shop_reg_num).first()
+    if not shop_owner:
         first_cart_item = cart_items_for_order.first()
-        shop_owner = None
         if first_cart_item and first_cart_item.stock_item:
             shop_owner = first_cart_item.stock_item.Shop
-            print(f"DEBUG: ShopOwner determined: {shop_owner}")
+            shop_reg_num = shop_owner.Reg_Num if shop_owner else None
+    payment_method = request.POST.get('payment_method')
+    if payment_method not in ['COD', 'Online']:
+        payment_method = 'COD'
+    amount = request.POST.get('amount')
 
-        order = OrderDB.objects.create(
-            Shop=shop_owner,
-            User_Name=user_identifier,
-            Name=request.POST.get('name'),
-            Email=request.POST.get('email'),
-            Address=request.POST.get('address'),
-            Mobile=request.POST.get('mobile'),
-            Card_Num=request.POST.get('cardnum', ''),
-            Reg_Num=request.POST.get('regnum', '')
-        )
-        order_id = order.id
-        print(f"DEBUG: Order CREATED. Order ID: {order_id}, Order Number: {order.Order_Num}")
+    order = OrderDB.objects.create(
+        Shop=shop_owner,
+        User_Name=user_identifier,
+        Name=request.POST.get('name'),
+        Email=request.POST.get('email'),
+        Address=request.POST.get('address'),
+        Mobile=request.POST.get('mobile'),
+        Card_Num=request.POST.get('cardnum', ''),
+        payment_method=payment_method,
+        amount=amount,
+        Reg_Num=shop_reg_num
+    )
 
-        for cart_item in cart_items_for_order:
-            cart_item.order = order
-            cart_item.save()
+    for cart_item in cart_items_for_order:
+        cart_item.order = order
+        cart_item.save()
+    OrderStatus.objects.create(order=order, status='pending')
+    cart_items_for_order.delete()
 
-        OrderStatus.objects.create(order=order, status='pending')
-        print(f"DEBUG: OrderStatus CREATED for Order ID: {order_id}")
+    if shop_owner and request.session.get('Reg_Num'):
+        messages.success(request, "Stock Request Placed Successfully")  # Ensure it's a shop owner placing the order
+        return redirect('ShopHome')
 
-        cart_items_to_clear = CartDB.objects.filter(User_Name=user_identifier, order__isnull=True)
-        if cart_items_to_clear.exists():
-            cart_items_to_clear.delete()
-            print(f"DEBUG: save_checkout - Cart CLEARED for user {user_identifier} after checkout.")
-        else:
-            print(f"DEBUG: save_checkout - Cart was already empty for user {user_identifier}.")
-
-        # Corrected conditional check using .get() with a default of None
-    if request.session.get('Ration_Card') is not None:  # Use .get() to avoid KeyError
-        print("DEBUG: Beneficiary checkout - Redirecting...")
-        if request.POST.get('payment_option') == 'cod':
-            return redirect(home)
-        elif request.POST.get('payment_option') == 'online':
-            return redirect(payment_page)
-        elif request.POST.get('payment_option') == 'upi':
-            return redirect(payment_page)
-        elif request.POST.get('payment_option') == 'card':
-            return redirect(payment_page)
-        else:
-            return redirect(home)
-
-    elif request.session.get('Reg_Num') is not None:  # Use .get() for Reg_Num too
-        print("DEBUG: Shop Owner checkout - Redirecting to shop home...")  # Debug for shop owner path
-        shop_home_url = 'ShopHome'  # Replace 'ShopHome' with actual shop home URL
-        return redirect(shop_home_url)
+    if payment_method == 'COD':
+        messages.success(request, "Order Placed Successfully")
+        return redirect('Home')
+    elif payment_method == 'Online':
+        messages.success(request, "Order Placed Successfully")
+        return redirect('PaymentPage')
     else:
-        print(
-            "DEBUG: No user type identified in session during checkout. This should not happen under normal circumstances. Redirecting to Home.")  # Critical error debug
-        return redirect('Home')  # Fallback redirect - consider redirecting to login page instead
+        return redirect('ContactUs')
 
-    print("DEBUG: Request method is NOT POST. Redirecting to Home.")
-    return redirect('Home')
+
 
 
 def delivery_partner(request):
-    all_orders = OrderDB.objects.all()
-    beneficiary_orders = []
-    for order in all_orders:
-        if BeneficiaryRegister.objects.filter(Ration_Card=order.User_Name).exists():
-            beneficiary_orders.append(order)
+    if not hasattr(request.user, 'delivery_profile'):
+        print("DEBUG: User does not have a delivery profile.")
+        return HttpResponse("You are not a delivery partner.")
 
-    return render(request, 'Delivery_Partner.html', {'order_n': beneficiary_orders})
+    # Get the shop's registration number linked to the delivery partner
+    shop_owner = ShopOwner.objects.filter(Reg_Num=request.user.delivery_profile.D_Shop.Reg_Num).first()
+    shop_reg_num = shop_owner.Reg_Num if shop_owner else None
+
+    # Exclude orders placed by shop owners
+    shop_owner_reg_nums = ShopOwner.objects.values_list('Reg_Num', flat=True)
+    orders = OrderDB.objects.filter(Reg_Num=shop_reg_num).exclude(User_Name__in=shop_owner_reg_nums).select_related(
+        'Shop')
+
+    # Count total delivered orders for the shop
+    total_delivered = OrderStatus.objects.filter(status='delivered', order__Reg_Num=shop_reg_num).count()
+
+    print(f"DEBUG: Displaying orders for shop Reg_Num={shop_reg_num}, excluding shop owner orders")
+
+    return render(request, 'Delivery_Partner.html', {'orders': orders, 'total_delivered': total_delivered})
+
 
 
 def signup_delivery(request):
@@ -643,70 +747,144 @@ def save_delivery_signup(request):
         pss = request.POST.get('passw')
         cpss = request.POST.get('cpassw')
         d_mbl = request.POST.get('mbl')
+        # Use .get() to safely access the file from request.FILES
+        pic = request.FILES.get('pic')
 
         if pss != cpss:
             messages.error(request, "Passwords do not match")
-            return redirect(signup_delivery)  # Assuming 'signup_delivery' is your signup URL name
+            return redirect('Delivery_SignUp')  # Assuming 'Delivery_SignUp' is your signup URL name
 
         try:
             shop = ShopOwner.objects.get(Reg_Num=shp_id)
         except ShopOwner.DoesNotExist:
             messages.error(request, "Invalid Shop Registration Number")
-            return redirect(signup_delivery)
+            return redirect('Delivery_SignUp')
 
         try:
-            # 1. Create Django User object FIRST (using username and password)
+            # 1. Create Django User object first (using username and password)
             user = User.objects.create_user(username=dname, password=pss)
 
             # 2. Then create Delivery profile linked to the User
             Delivery.objects.create(
                 D_Partner=user,  # Link Delivery to the User object
                 D_Shop=shop,
-                D_Phone=d_mbl
+                D_Phone=d_mbl,
+                D_Pic=pic
+                # This now will be None if no file was uploaded, which is allowed if your model sets null=True, blank=True
             )
-            messages.success(request, "Delivery Partner registration successful! Please login.")
-            return redirect('LoginPage')  # Redirect to login page
+            messages.success(request, "Delivery Partner registration successful!")
+            return redirect('PartnerDetails')
 
-        except IntegrityError:  # Catch username already exists error (from User model)
+        except IntegrityError:
             messages.error(request, "Username already exists.")
-            return redirect(signup_delivery)
+            return redirect('Delivery_SignUp')
 
-    return redirect(signup_delivery)
+    return redirect('Delivery_SignUp')
 
 
+RAZORPAY_KEY_ID = 'rzp_test_qtgRvY4PWS4ZIy'
+RAZORPAY_SECRET_KEY = '2D7FeodPxKgqIiWZDYhkNc7L'
+
+
+# Payment Page View
 def payment_page(request):
     nm = OrderDB.objects.order_by('-id').first()
 
-    pay = nm.total  # fetching total price
+    if not nm:
+        messages.error(request, "No active order found!")
+        return redirect('CartPage')
 
-    amt = int(pay * 100)  # converting to smallest currency unit (paisa)
+    try:
+        pay = nm.total  # Fetch total price
+        amt = int(pay * 100)  # Convert to smallest currency unit (paisa)
 
-    pay_str = str(amt)  # reconverting to string
+        client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_SECRET_KEY))
+        payment = client.order.create({
+            'amount': amt,
+            'currency': 'INR',
+            'payment_capture': 1  # Auto-capture payment
+        })
 
+        nm.razorpay_order_id = payment['id']
+        nm.save()
+        print("Razorpay payment object:", payment)
+
+        return render(request, 'Payment.html', {
+            'nm': nm,
+            'pay_str': str(amt),
+            'razorpay_order_id': payment['id'],
+            'razorpay_key': RAZORPAY_KEY_ID
+        })
+
+    except Exception as e:
+        messages.error(request, f"Payment error: {e}")
+        return redirect('CartPage')
+
+
+@csrf_exempt
+def verify_payment(request):
     if request.method == 'POST':
-        ord_currency = 'INR'
-        client = razorpay.Client(auth=('2D7FeodPxKgqIiWZDYhkNc7L', 'rzp_test_qtgRvY4PWS4ZIy'))
-        payment = client.order.create({'amount': amt, 'currency': ord_currency})
+        try:
+            data = json.loads(request.body)
+            client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_SECRET_KEY))
 
-    return render(request, 'Payment.html', {'nm': nm, 'pay_str': pay_str})
+            # Log received data for debugging
+            print("Received data:", data)
+
+            # Verify payment signature
+            client.utility.verify_payment_signature({
+                'razorpay_order_id': data['razorpay_order_id'],
+                'razorpay_payment_id': data['razorpay_payment_id'],
+                'razorpay_signature': data['razorpay_signature']
+            })
+
+            # Update order status
+            order = OrderDB.objects.get(razorpay_order_id=data['razorpay_order_id'])
+            order.payment_status = "Paid"
+            order.save()
+
+            return JsonResponse({"success": True, "redirect_url": "/OrderPage"})
+
+        except razorpay.errors.SignatureVerificationError as e:
+            print("Signature verification failed:", e)
+            return JsonResponse({"success": False, "error": "Invalid payment signature"})
+
+        except OrderDB.DoesNotExist:
+            print("Order not found for order ID:", data['razorpay_order_id'])
+            return JsonResponse({"success": False, "error": "Order not found"})
+
+        except Exception as e:
+            print("Unexpected error:", e)
+            return JsonResponse({"success": False, "error": str(e)})
+
+    return JsonResponse({"success": False, "error": "Invalid request"})
 
 
 def cancel_payment(request):
     messages.error(request, 'Payment Canceled')
     return redirect(checkout_page)
 
-
 def request_page(request):
-    shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
-    usr_name = request.session.get('Reg_Num')
-    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
-    x = cart_count.count()
-    all_orders = OrderDB.objects.all()
-    beneficiary_orders = []
-    for order in all_orders:
-        if BeneficiaryRegister.objects.filter(Ration_Card=order.User_Name).exists():
-            beneficiary_orders.append(order)
-    return render(request, 'Request.html', {'shp': shp, 'x': x, 'order_n': beneficiary_orders})
+    # Get the current shop owner based on session Reg_Num
+    reg_num = request.session.get('Reg_Num')
+    shop_owner = ShopOwner.objects.filter(Reg_Num=reg_num).first()
+
+    # Count items in the cart for the current shop owner
+    cart_count = CartDB.objects.filter(User_Name=reg_num, order__isnull=True).count()
+
+    # Get all orders linked to the shop owner's Reg_Num
+    shop_orders = OrderDB.objects.filter(Reg_Num=reg_num)
+
+    # Filter orders placed by beneficiaries (users in BeneficiaryRegister)
+    beneficiary_orders = shop_orders.filter(
+        User_Name__in=BeneficiaryRegister.objects.values_list('Ration_Card', flat=True)
+    )
+
+    return render(request, 'Request.html', {
+        'shp': shop_owner,
+        'x': cart_count,
+        'order_n': beneficiary_orders,
+    })
 
 
 def update_status(request, order_num):
@@ -716,8 +894,8 @@ def update_status(request, order_num):
         order_status = order.status  # Access the related OrderStatus
 
         order_status.status = new_status  # Update the status
-        order_status.save()  # Save the updated OrderStatus
-
+        order_status.save()
+        messages.success(request, "Status Updated")
     # Redirect based on the user's role. Shop owners are taken back to their Requests page.
     if request.session.get('Reg_Num'):
         return redirect('Requests')  # Change 'Requests' to your shop owner-specific URL name if needed
@@ -727,12 +905,17 @@ def update_status(request, order_num):
 
 def order_details(request, order_num):
     order = get_object_or_404(OrderDB, Order_Num=order_num)  # Fetch the order by order_num
+    print(f"Order Amount: {order.amount}, Payment Method: {order.payment_method}")
     cart_items = order.cart_items.all()  # Get related cart items for this order
     order_status = order.status  # Get the associated order status
     shp = ShopOwner.objects.filter(Reg_Num=request.session.get('Reg_Num')).first()
     details = BeneficiaryRegister.objects.filter(Ration_Card=request.session.get('Ration_Card')).first()
     all_orders = OrderDB.objects.all()
+    usr_name = request.session.get('Reg_Num')
+    cart_count = CartDB.objects.filter(User_Name=usr_name, order__isnull=True)
+    x = cart_count.count()
     order_n = []
+
     for order in all_orders:
         if BeneficiaryRegister.objects.filter(Ration_Card=order.User_Name).exists():
             order_n.append(order)
@@ -742,17 +925,60 @@ def order_details(request, order_num):
         'order_status': order_status,
         'details': details,
         'shp': shp,
-        'order_n': order_n
+        'order_n': order_n,
+        'x': x
 
     }
 
-    # Use a different template or add extra context for shop owners if needed.
-    if request.session.get('is_shop_owner'):
-        return render(request, 'ShopOwnerOrderStatus.html', context)
+    # Use a different template or add extra context for shop owners if needed
+    return render(request, 'OrderStatus.html', context)
+
+
+def delivery_partner_list(request):
+    if hasattr(request.user, 'shopowner_profile'):
+        shopowner = request.user.shopowner_profile
+        partners = Delivery.objects.filter(D_Shop=shopowner)
+        return render(request, 'DeliveryPartnerDetails.html', {'partners': partners})
     else:
-        return render(request, 'OrderStatus.html', context)
+        messages.error(request, "Only shop owners can view delivery partners.")
+        return redirect('ShopHome')
 
 
-def partner_details(request):
-    dev = Delivery.objects.all()
-    return render(request, 'DeliveryPartnerDetails.html', {'dev': dev})
+def forgot_password(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        try:
+            user = User.objects.get(username=username)
+            request.session['reset_username'] = username  # Store username for reset
+            return redirect('reset_password')
+        except User.DoesNotExist:
+            messages.error(request, "Username not found.")
+            return redirect('forgot_password')
+
+    return render(request, 'forgot_password.html')
+
+
+def reset_password(request):
+    if request.method == "POST":
+        username = request.session.get('reset_username')  # Get username from session
+        new_password = request.POST['new_password']
+        confirm_password = request.POST['confirm_password']
+
+        if new_password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect('reset_password')
+
+        try:
+            user = User.objects.get(username=username)
+            user.set_password(new_password)  # Hashes and saves password
+            user.save()
+
+            # Clear session and show success message
+            del request.session['reset_username']
+            messages.success(request, "Password reset successful! Please log in.")
+            return redirect('LoginPage')
+        except User.DoesNotExist:
+            messages.error(request, "User not found.")
+            return redirect('forgot_password')
+
+    return render(request, 'reset_password.html')

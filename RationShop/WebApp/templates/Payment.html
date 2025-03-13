@@ -6,6 +6,13 @@
     <title>Payment Page</title>
 </head>
 <body>
+<div style="margin-left:80%;">
+    <a href="{% url 'OrderPage' %}">
+        <button style="background-color:beige; border-radius:10px; height:50px; width:150px;">
+            Go Back
+        </button>
+    </a>
+</div>
 
 <div style="text-align:center; margin-top:200px; margin-left:150px;">
     <h1>Proceed To Payment</h1>
@@ -15,7 +22,7 @@
          style="margin-left:10px;"><br><br>
 
     <!-- Payment Button -->
-    <button onclick="startPayment()"
+    <button id="pay-btn"
             style="background-color:LawnGreen; border-radius:10px; height:50px; width:150px;">
         Make Payment
     </button>
@@ -38,43 +45,53 @@
     }
 </style>
 
-<!-- Razorpay Script (Manual Trigger) -->
+<!-- Razorpay Script -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-    function startPayment() {
+    document.getElementById('pay-btn').addEventListener('click', function() {
         var options = {
-            "key": "rzp_test_qtgRvY4PWS4ZIy",
+            "key": "{{ razorpay_key }}",
             "amount": "{{ pay_str }}",
             "currency": "INR",
-            "order_id": "{{ payment.order_id }}",
-            "name": "E-Mart",
+            "order_id": "{{ razorpay_order_id }}",
+            "name": "RationKart",
             "description": "Your description",
             "image": "",
-            "prefill": {
-                "name": "abc",
-                "email": "abc@gmail.com"
+            "handler": function(response) {
+                fetch("{% url 'verify_payment' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_signature: response.razorpay_signature
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Payment successful!");
+                        window.location.href = data.redirect_url;  // Redirect to Order Page
+                    } else {
+                        alert("Payment verification failed!");
+                    }
+                });
             },
             "theme": {
                 "color": "#4badeb"
-            },
-            "handler": function (response) {
-                alert("Payment Successful! Transaction ID: " + response.razorpay_payment_id);
-            },
-            "modal": {
-                "ondismiss": function () {
-                    alert("Payment was cancelled.");
-                }
             }
         };
 
         var rzp = new Razorpay(options);
         rzp.open();
-    }
+    });
 
     function confirmCancel() {
         return confirm("Are you sure you want to cancel the payment?");
     }
 </script>
-
 </body>
 </html>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from WebApp.models import CartDB, BeneficiaryRegister, ShopOwner, OrderStatus, OrderDB
+from WebApp.models import CartDB, BeneficiaryRegister, ShopOwner, OrderStatus, OrderDB,Delivery
 
 # Register your models here using decorators (CORRECT WAY):
 
@@ -22,4 +22,8 @@ class OrderDBAdmin(admin.ModelAdmin):
 
 @admin.register(OrderStatus) # Use @admin.register decorator
 class OrderStatusAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Delivery) # Use @admin.register decorator
+class DeliveryAdmin(admin.ModelAdmin):
     pass
