@@ -6,6 +6,14 @@ from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from .decorators import approval_required
 import json
+from datetime import timedelta
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.db import IntegrityError
+from django.utils.timezone import now
+from .models import ShopOwner, OTPVerification
+from .utils import generate_otp, send_otp_email
 from django.utils.timezone import now
 from django.db.models import Q
 from AdminApp.models import Stock, RationItems
@@ -237,7 +245,6 @@ def save_login(request):
     return redirect('LoginPage')
 
 
-
 def shop_signup(request):
     if request.method == 'POST':
         s_name = request.POST.get('sname')
@@ -251,26 +258,85 @@ def shop_signup(request):
         panch = request.POST.get('panch')
         location = request.POST.get('place')
 
+        if User.objects.filter(username=reg_num).exists():
+            messages.error(request, "Registration Number already exists.")
+            return redirect('Shop')
+
         try:
-            user = User.objects.create_user(username=reg_num, password=s_pass)
-            ShopOwner.objects.create(
-                user=user,
-                S_Name=s_name,
-                Reg_Num=reg_num,
-                S_Mail=s_mail,
-                S_Mobile=s_mobile,
-                State=state,
-                District=dist,
-                Taluk=taluk,
-                Panchayat=panch,
-                Place=location
-            )
-            messages.success(request, "Shop Owner registration successful! Please login.")
-            return redirect('LoginPage')
+            # Create inactive user
+            user = User.objects.create_user(username=reg_num, password=s_pass, email=s_mail, is_active=False)
+
+            # Generate OTP and save to OTPVerification model
+            otp = generate_otp()
+            otp_expiry = now() + timedelta(minutes=10)  # OTP valid for 10 minutes
+            OTPVerification.objects.create(user=user, otp=otp, otp_expiry=otp_expiry)
+
+            # Send OTP via email
+            send_otp_email(s_mail, otp)
+
+
+            # Store details in session for later use
+            request.session['shop_data'] = {
+                's_name': s_name, 'reg_num': reg_num, 's_mail': s_mail, 's_mobile': s_mobile,
+                'state': state, 'dist': dist, 'taluk': taluk, 'panch': panch, 'location': location
+            }
+
+            # Redirect to OTP verification page
+            request.session['shop_email'] = s_mail
+            return redirect('verify_shop_otp')
+
         except IntegrityError:
             messages.error(request, "Registration Number already exists.")
             return redirect('Shop')
+
     return redirect('Shop')
+
+def verify_shop_otp(request):
+    if request.method == "POST":
+        email = request.session.get("shop_email")
+        user = User.objects.filter(email=email).first()
+        otp_entered = request.POST.get("otp")
+
+        if not user:
+            messages.error(request, "User not found.")
+            return redirect("SignUpPage")
+
+        otp_record = OTPVerification.objects.filter(user=user).first()
+
+        if otp_record and otp_record.otp == otp_entered:
+            if otp_record.is_valid():
+                user.is_active = True  # Activate user after OTP verification
+                user.save()
+
+                # Retrieve shop data from session
+                shop_data = request.session.get("shop_data", {})
+                if shop_data:
+                    ShopOwner.objects.create(
+                        user=user,
+                        S_Name=shop_data["s_name"],
+                        Reg_Num=shop_data["reg_num"],
+                        S_Mail=shop_data["s_mail"],
+                        S_Mobile=shop_data["s_mobile"],
+                        State=shop_data["state"],
+                        District=shop_data["dist"],
+                        Taluk=shop_data["taluk"],
+                        Panchayat=shop_data["panch"],
+                        Place=shop_data["location"]
+                    )
+
+                # Delete OTP record and session data
+                otp_record.delete()
+                del request.session["shop_email"]
+                del request.session["shop_data"]
+
+                messages.success(request, "Email verified successfully! You can now log in.")
+                return redirect(login_page)
+
+        messages.error(request, "Invalid or expired OTP. Try again.")
+        return redirect("verify_shop_otp")
+
+    return render(request, "verify_shop_otp.html")
+
 
 
 def approve_request(request):
@@ -430,7 +496,6 @@ def cart_page(request):
     })
 
 
-
 def save_cart(request):
     print("DEBUG: save_cart view function is STARTING!")
     print(f"DEBUG: Request method: {request.method}")
@@ -444,21 +509,31 @@ def save_cart(request):
     current_year = now().year
 
     try:
-        i_name = request.POST.get('iname', '').strip()
-        i_price = float(request.POST.get('price', 0))
-        i_quant = int(request.POST.get('quant', 0))
-        i_total = float(request.POST.get('total', 0))
+        i_name = request.POST.get('rname', '').strip()
+        i_quant = int(request.POST.get('rquant', 0))
+
+        if request.session.get('Ration_Card'):  # If logged in using Ration Card
+            i_price = float(request.POST.get('price', 0))
+            i_total = float(request.POST.get('total', 0))
+        else:  # If logged in using Reg_Num (Shop Owner)
+            i_price = 0
+            i_total = 0  # Price & Total are not needed
     except ValueError:
         print("DEBUG: Invalid data format received.")
         messages.error(request, "Invalid data received. Please try again.")
         return redirect(shop_stock if request.session.get('Reg_Num') else products)
 
-    if i_quant <= 0 or i_price < 0:
-        print("DEBUG: Invalid quantity or price.")
-        messages.error(request, "Invalid quantity or price.")
+    if i_quant <= 0:
+        print("DEBUG: Invalid quantity.")
+        messages.error(request, "Invalid quantity.")
         return redirect(shop_stock if request.session.get('Reg_Num') else products)
 
     if request.session.get('Ration_Card'):
+        if i_price is None or i_total is None or i_price < 0:
+            print("DEBUG: Invalid price or total.")
+            messages.error(request, "Invalid price or total.")
+            return redirect(products)
+
         try:
             ration_item = RationItems.objects.get(Ration=i_name)
         except RationItems.DoesNotExist:
@@ -487,7 +562,8 @@ def save_cart(request):
             Item_Image=ration_item.R_Image
         )
         messages.success(request, "Item added to cart.")
-    else:
+
+    else:  # Logged in as Shop Owner (Reg_Num)
         try:
             stock_item = Stock.objects.get(Item=i_name)
         except Stock.DoesNotExist:
@@ -499,17 +575,13 @@ def save_cart(request):
             stock_item=stock_item,
             Item_Name=i_name,
             Item_Quantity=i_quant,
-            I_Price=i_price,
-            I_Total=i_total,
+            I_Price=None,  # Not needed
+            I_Total=i_total,  # Not needed
             Item_Image=stock_item.Item_Image
         )
         messages.success(request, "Item added to cart.")
 
     return redirect(shop_stock if request.session.get('Reg_Num') else products)
-
-
-
-
 
 
 def delete_cart(request, crt_id):

@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from django.db.models import Sum
+from django.utils.timezone import now
 from django.contrib.auth.models import User
 
 class ShopOwner(models.Model):
@@ -82,7 +83,7 @@ class CartDB(models.Model):
 
     Item_Name = models.CharField(max_length=100)  # You might not need this anymore if linked to RationItems/Stock
     Item_Quantity = models.IntegerField(null=True)
-    I_Price = models.IntegerField()
+    I_Price = models.IntegerField(null=True,blank=True,default=0)
     I_Total = models.IntegerField()
     Item_Image = models.ImageField(
         upload_to="Cart Images")  # You might not need this if images are in RationItems/Stock
@@ -161,3 +162,12 @@ class Delivery(models.Model):
     )
     D_Phone = models.CharField(max_length=20)
     D_Pic = models.ImageField(upload_to="Delivery Partner", null=True, blank=True)
+
+
+class OTPVerification(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+    otp_expiry = models.DateTimeField()
+
+    def is_valid(self):
+        return now() < self.otp_expiry
