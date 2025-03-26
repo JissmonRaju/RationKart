@@ -511,7 +511,6 @@ def save_cart(request):
     try:
         i_name = request.POST.get('rname', '').strip()
         i_quant = int(request.POST.get('rquant', 0))
-        print(f"DEBUG: Received Quantity = {i_quant}")
 
         if request.session.get('Ration_Card'):  # If logged in using Ration Card
             i_price = float(request.POST.get('price', 0))

@@ -176,7 +176,7 @@
 
             <form action="{% url 'Save_Cart' %}" method="post">
                 {% csrf_token %}
-                <input type="hidden" name="rname" value="{{ sing.Ration }}">
+                <input type="hidden" name="iname" value="{{ sing.Ration }}">
                 <input type="hidden" id="price" name="price" value="{{ sing.R_Price }}">
                 <input type="hidden" id="member" value="{{ prod.Family_Members }}">
 
@@ -185,7 +185,7 @@
                     <label class="form-label">Quantity (In Kg):</label>
                     <div class="input-group" style="max-width: 150px;">
                         <input
-                                name="rquant"
+                                name="quant"
                                 readonly
                                 id="quantity"
                                 type="number"
