@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+{% extends 'Index.html' %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management</title>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title fw-semibold mb-4">Edit Stock Details</h5>
+                <div class="card">
+                    <div class="card-body">
+                        <form action="{% url 'Update_Stock' s_id=edstk.id %}" method="post"
+                              enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="exampleInputEmail1" class="form-label">Name Of Item</label>
+                                <input type="text" value="{{edstk.Item}}" class="form-control" name="iname"
+                                       aria-describedby="emailHelp">
+                            </div>
+                            <div class="mb-3">
+                                <label for="exampleInputEmail1" class="form-label">Item Description</label>
+                                <input type="text" name="idesc" value="{{ edstk.Description }}" class="form-control"
+                                       aria-describedby="emailHelp">
+                            </div>
+                            <div class="mb-3">
+                                <label for="exampleInputEmail1" class="form-label">Total Quantity (in Kg)</label>
+                                <input type="number" name="tquant" class="form-control" id="exampleInputEmail1"
+                                       value="{{ edstk.Total_Quantity }}" aria-describedby="emailHelp">
+                            </div>
+                            <div class="mb-3">
+                                <label for="exampleInputEmail1" class="form-label">Category</label>
+                                <select name="category" id="" class="form-control">
+                                    <option>{{edstk.Category}}</option>
+                                    {% for i in cate %}
+                                    <option>{{ i.Category_Name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="exampleInputEmail1" class="form-label">Currently Available?</label>
+                                <select class="form-control" name="avail">
+                                    <option>{{edstk.Availability}}</option>
+                                    <option> Item Is Available</option>
+                                    <option> Item Is Not Available</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="exampleInputEmail1" class="form-label">Price (Per Kg)</label>
+                                <input type="number" value="{{edstk.Item_Price}}" name="iprice" class="form-control" aria-describedby="emailHelp">
+                            </div>
+                            <div class="mb-3">
+                                <label for="exampleInputEmail1" class="form-label">Upload Item Image</label>
+                                <img src="{{edstk.Item_Image.url}}" width="100px" height="100px">
+                                <input type="file" name="iimage" class="form-control" aria-describedby="emailHelp">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+</body>
+</html>
+{% endblock %}
