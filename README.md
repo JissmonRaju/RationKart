@@ -9,7 +9,6 @@ RationKart is a Django-based platform designed to digitize and optimize ration d
 - [Tech Stack](#tech-stack)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
 - [License](#license)
 
 
