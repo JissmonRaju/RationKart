@@ -1,7 +1,7 @@
 
 # RationKart
 
-RationKart is a Django-based platform designed to digitize and optimize ration distribution workflows for Shop Owners, Beneficiaries, Delivery Partners, and Administrators. By leveraging modern web technologies, RationKart aims to enhance the efficiency and transparency of ration management systems.
+RationKart is a Django-based platform designed to digitize and optimize ration distribution workflows for Shop Owners, Beneficiaries, Delivery Partners, and Administrators. By leveraging modern web technologies, RationKart enhances the efficiency and transparency of ration management systems.
 
 ## Table of Contents
 
@@ -11,91 +11,116 @@ RationKart is a Django-based platform designed to digitize and optimize ration d
 - [Usage](#usage)
 - [License](#license)
 
-
 ## Features
 
-- **Role-Based Access:** Custom dashboards tailored for Shop Owners, Beneficiaries, Delivery Partners, and Admins.
-- **Secure Authentication:** OTP verification via the SendGrid API ensures authorized access.
-- **Scalable Database:** Transitioned from SQLite (for local development) to PostgreSQL (in production on Render) to efficiently manage users and complex queries.
-- **Responsive Design:** User interface crafted with HTML, CSS, and JavaScript for optimal user experience.
+- **Role-Based Access:** Custom dashboards for Shop Owners, Beneficiaries, Delivery Partners, and Admins.
+- **Secure Authentication:** OTP verification via SendGrid API for authorized access.
+- **Payment Integration:** Secure payment processing via Razorpay API for seamless transactions and payment history tracking.
+- **Scalable Database:** Uses PostgreSQL in production (deployed on Render) and SQLite for local development.
+- **Responsive Design:** User interface built with HTML, CSS, and JavaScript for seamless cross-device compatibility.
 
 ## Tech Stack
 
 - **Backend:** Django
-- **Database:** PostgreSQL (deployed on Render), SQLite( Local Deployment )
-- **Deployment:** Render using Gunicorn and WhiteNoise
-- **Security:** Implemented session management, encrypted OTP workflows, and role-based permissions.
+- **Database:** PostgreSQL (Production), SQLite (Local Development)
+- **Deployment:** Render (Gunicorn + WhiteNoise)
+- **APIs & Services:** SendGrid (OTP), Razorpay (Payments)
+- **Security:** Session management, encrypted OTP workflows, and role-based permissions.
+
 
 ## Installation
 
 To set up the project locally:
 
 1. **Clone the repository:**
-
   
    git clone https://github.com/JissmonRaju/RationKart.git
   
 
 2. **Navigate to the project directory:**
-
+ 
    cd RationKart
- 
-3. **Create a virtual environment:**
+   
 
- 
+3. **Create a virtual environment:**
+  
    python -m venv env
- 
+
 
 4. **Activate the virtual environment:**
 
      env\Scripts\activate
 
-5. **Install the required dependencies:**
-
+5. **Install dependencies:**
    
    pip install -r requirements.txt
-  
 
-6. **Set up the database:**
+6. **Environment Configuration:**
 
+    -Create a .env file in your project root with the following variables:
+   
+    # ----- Django Settings -----
+    SECRET_KEY=your_django_secret_key_here  # Generate using: `python -c 'from django.core.management.utils import get_random_secret_key;    print(get_random_secret_key())'`
+    DEBUG=True                             # Set to False in production
+    ALLOWED_HOSTS=localhost,127.0.0.1     # Add production domain in live deployment
+    CSRF_TRUSTED_ORIGINS=http://localhost:8000,https://*.onrender.com
+    
+    # ----- Database (Development) -----
+    DATABASE_URL=sqlite:///db.sqlite3
+    
+    # ----- Database (Production - Render PostgreSQL) -----
+    # DATABASE_URL=postgresql://[USER]:[PASSWORD]@[HOST]/[DB_NAME]
+    
+    # ----- SendGrid (OTP) -----
+    SENDGRID_API_KEY=your_sendgrid_api_key_here
+    DEFAULT_FROM_EMAIL=your_email@domain.com
+    SENDGRID_SANDBOX_MODE_IN_DEBUG=False
+    
+    # ----- Razorpay (Payments) -----
+    RAZORPAY_KEY_ID=your_razorpay_key_id
+    RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+
+7. **Set up the database:**
    - Apply migrations:
+     
      python manage.py makemigrations
      python manage.py migrate
+     
 
-7. **Run the development server:**
-
+8. **Run the development server:**
+  
    python manage.py runserver
-
-   The application will be accessible at `http://127.0.0.1:8000/`.
+  
+   Access the application at `http://127.0.0.1:8000/`.
 
 ## Usage
 
 1. **Access the application:**
-
-   Open your web browser and navigate to `http://127.0.0.1:8000/`.
+   Navigate to `http://127.0.0.1:8000/` in your web browser.
 
 2. **User Registration:**
-   - Users have to register as a shop owner first, as the beneficiary has to be approved by the shopowner to complete registration.
-   - The Shopowner can approve a beneficiary after logging in, by going to "My Profile" in the user icon and then clicking the "Approve           Requests" button 
-   - Users can register based on their roles: Shop Owner, Beneficiary, or Delivery Partner.
-   - During ShopOwner registration, an OTP will be sent via email for verification. So, ensure to give a valid E-Mail ID.
+   - **Shop Owners:** Register first, as beneficiaries require shop owner approval.
+   - **Beneficiaries:** Submit registration requests via Shop Owners.
+   - **OTP Verification:** Shop Owners receive an OTP via email during registration (ensure a valid email).
 
-3. **Dashboard Access:**
+3. **Approval Workflow:**
+   - Shop Owners approve beneficiaries via "My Profile" → "Approve Requests".
 
-   - Upon successful login, users will be redirected to their respective dashboards tailored to their roles.
+4. **Dashboard Features:**
+   - **Shop Owners:**
+     - Manage orders and delivery logs
+     - Request stock replenishment from Admins
+     - Register Delivery Partners
+   - **Beneficiaries:** View ration entitlements, order rations and view orders
+   - **Delivery Partners:** Track and confirm deliveries
+   - **Admins:** Oversee system operations and generate reports
 
-4. **Manage Ration Distribution:**
-
-   - Shop Owners can manage orders, view delivery logs, and also able to sign up Delivery Partners.
-   - Shop Owners can request more stock from the Admin.
-   - Beneficiaries can view their ration entitlements and history.
-   - Delivery Partners can view delivery schedules and confirm deliveries.
-   - Admins can oversee the entire system, manage users, and generate reports.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+Licensed under the [MIT License](LICENSE.md).
 
+---
 
-We invite you to explore the project and share your thoughts. Your feedback is highly appreciated.
-```
+**We welcome your feedback and suggestions!** 💬
+
