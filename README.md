@@ -67,7 +67,7 @@ To set up the project locally:
    
     ALLOWED_HOSTS=localhost,127.0.0.1     # Add production domain in live deployment
    
-    CSRF_TRUSTED_ORIGINS=http://localhost:8000,https://*.onrender.com
+    CSRF_TRUSTED_ORIGINS=http://localhost:8000,https://your-published-domain
     
     #**Database (Development)**
    
