@@ -91,6 +91,7 @@ To set up the project locally:
    - Apply migrations:
      
      python manage.py makemigrations
+     
      python manage.py migrate
      
 
