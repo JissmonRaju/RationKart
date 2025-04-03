@@ -59,7 +59,7 @@ To set up the project locally:
 
     -Create a .env file in your project root with the following variables:
    
-    # ----- Django Settings -----
+    # Django Settings
     SECRET_KEY=your_django_secret_key_here  # Generate using: `python -c 'from django.core.management.utils import get_random_secret_key;    print(get_random_secret_key())'`
     DEBUG=True                             # Set to False in production
     ALLOWED_HOSTS=localhost,127.0.0.1     # Add production domain in live deployment
