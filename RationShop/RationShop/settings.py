@@ -32,7 +32,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'your-fallback-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'False'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = ['rationkart.onrender.com', 'localhost',  # For local development
+                 '127.0.0.1',
+                 '']
 
 
 # Application definition
