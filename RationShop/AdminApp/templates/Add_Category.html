@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+{% extends 'Index.html' %}
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management</title>
+</head>
+<body>
+<div class="container-fluid">
+        <div class="container-fluid">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title fw-semibold mb-4">Add Stock Category</h5>
+              <div class="card">
+                <div class="card-body">
+                  <form action="{% url 'Save_Category' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                      <label class="form-label">Name Of Category</label>
+                      <input type="text" class="form-control" name="cname" aria-describedby="emailHelp">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Category Description</label>
+                      <input type="text" name="cdesc" class="form-control"  aria-describedby="emailHelp">
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Upload Category Image</label>
+                      <input type="file" name="cimage" class="form-control"  aria-describedby="emailHelp">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                  </form>
+                </div>
+              </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+</body>
+</html>
+{% endblock %}
