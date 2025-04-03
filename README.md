@@ -59,35 +59,42 @@ To set up the project locally:
 
     -Create a .env file in your project root with the following variables:
    
-    # Django Settings
+    **Django Settings**
+   
     SECRET_KEY=your_django_secret_key_here  # Generate using: `python -c 'from django.core.management.utils import get_random_secret_key;    print(get_random_secret_key())'`
+   
     DEBUG=True                             # Set to False in production
+   
     ALLOWED_HOSTS=localhost,127.0.0.1     # Add production domain in live deployment
+   
     CSRF_TRUSTED_ORIGINS=http://localhost:8000,https://*.onrender.com
     
-    # ----- Database (Development) -----
+    #**Database (Development)**
+   
     DATABASE_URL=sqlite:///db.sqlite3
     
-    # ----- Database (Production - Render PostgreSQL) -----
-    # DATABASE_URL=postgresql://[USER]:[PASSWORD]@[HOST]/[DB_NAME]
+   **Database (Production - Render PostgreSQL)**
+     DATABASE_URL=postgresql://[USER]:[PASSWORD]@[HOST]/[DB_NAME]
     
-    # ----- SendGrid (OTP) -----
+    **SendGrid (OTP)**
+   
     SENDGRID_API_KEY=your_sendgrid_api_key_here
     DEFAULT_FROM_EMAIL=your_email@domain.com
     SENDGRID_SANDBOX_MODE_IN_DEBUG=False
     
-    # ----- Razorpay (Payments) -----
+   **Razorpay (Payments)**
+   
     RAZORPAY_KEY_ID=your_razorpay_key_id
     RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 
-7. **Set up the database:**
+8. **Set up the database:**
    - Apply migrations:
      
      python manage.py makemigrations
      python manage.py migrate
      
 
-8. **Run the development server:**
+9. **Run the development server:**
   
    python manage.py runserver
   
